@@ -2,7 +2,6 @@ function [varargout] = getSnipsForSession(sesName, sesType)
 addpath('/mnt/hpx/slurm/uranc/TDT2MAT')
 addpath('/mnt/hpx/slurm/uranc/TDT2MAT/TDT_MichaelStephan_Add2Path/')
 
-
 % Gets the trial info to make snippets
 global outputDirSes
 TDTFilename = sprintf('%s/Experiments_%s', outputDirSes, sesName);

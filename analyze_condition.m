@@ -63,7 +63,7 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         timelockLFP = ft_timelockbaseline(cfg, timelockLFP);
         
         % save
-        fname = sprintf('%s_timelockLFP.mat', fbase);
+        fname = sprintf('%stimelockLFP.mat', fbase);
         ESIsave(fullfile(savefile, fname), 'timelockLFP');
         clear timelockLFP
     end
@@ -86,7 +86,7 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         timelockMUAX = ft_spikedensity(cfg, timelockMUAX);
         
         %save
-        fname = sprintf('%s_timelockMUAX.mat', fbase);
+        fname = sprintf('%stimelockMUAX.mat', fbase);
         ESIsave(fullfile(savefile, fname), 'timelockMUAX');
         clear timelockMUAX
     end
@@ -108,7 +108,7 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         trialPSTH = ft_timelockbaseline(cfg, trialPSTH);
         
         % save these
-        fname = sprintf('%s_trialPSTH.mat', fbase);
+        fname = sprintf('%strialPSTH.mat', fbase);
         ESIsave(fullfile(savefile, fname), 'trialPSTH');
         clear trialPSTH
         
@@ -119,7 +119,7 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
             cfg.keeptrials = 'no';
             
             trialPSTHVar = ft_spike_psth(cfg, spikeClean);
-            fname = sprintf('%s_trialPSTHVar.mat', fbase);
+            fname = sprintf('%strialPSTHVar.mat', fbase);
             ESIsave(fullfile(savefile, fname), 'trialPSTHVar');
         end
     end
@@ -140,7 +140,7 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         cfg.tapsmofrq = 7;
         
         lfpPower = ft_freqanalysis(cfg, lfpSel);
-        fname = sprintf('%s_lfpPower.mat', fbase);
+        fname = sprintf('%slfpPower.mat', fbase);
         ESIsave(fullfile(savefile, fname), 'lfpPower');
         clear lfpPower
         
@@ -166,7 +166,7 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
                 lfpPowerVar(tr) = ft_freqanalysis(cfg, lfpSel);
             end
             
-            fname = sprintf('%s_lfpPowerVar.mat', fbase);
+            fname = sprintf('%slfpPowerVar.mat', fbase);
             ESIsave(fullfile(savefile, fname), 'lfpPowerVar');
             clear TFRmultEvent
         end

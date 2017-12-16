@@ -12,17 +12,19 @@ if ~isfield(allCfg, 'save');               allCfg.save = false;            end
 
 % Load neural data - LFP, MUA, Waveform
 filename = allCfg.inputfile;
-savename = allCfg.outputfile
+global outputDirSes;
+outputDirSes = filename;
+% savename = allCfg.outputfile
 
 % Load the data
 if strcmp(allCfg.name, 'hermes')
     pathLFP = dir(fullfile(filename, '*stimOn.lfp'));
     pathMUAX = dir(fullfile(filename, '*stimOn.muax'));
-    pathSpike = dir(fullfile(filename, sprintf('*_%s_chopped.spike', allCfg.tag)));
+    pathSpike = dir(fullfile(filename, sprintf('*%s_chopped.spike', allCfg.tag)));
 else
     pathLFP = dir(fullfile(filename, '*_chopped.lfp'));
     pathMUAX = dir(fullfile(filename, '*_chopped.muax'));
-    pathSpike = dir(fullfile(filename, sprintf('*_%s_chopped.spike', allCfg.tag)));
+    pathSpike = dir(fullfile(filename, sprintf('*%s_chopped.spike', allCfg.tag)));
 end
 load(fullfile(filename, pathLFP.name), '-mat');
 lfp.data = data; clear data;
@@ -171,26 +173,28 @@ elseif strcmp(allCfg.type, 'NatImSEQ')
         analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd))
     end
 else
-    for cnd=1:length(condLib)
-        trialsChosen = find(Cond==condLib(cnd))';
-        length(trialsChosen)
-        tok = strsplit(filename, '/');
-        if strcmp(tok{end}, 'hermes_20170428_fixation-naturalim_15')
-            trialsChosen = trialsChosen(1:18);
+        for cnd=1:length(condLib)
+            trialsChosen = find(Cond==condLib(cnd))';
+            length(trialsChosen)
+            tok = strsplit(filename, '/');
+            if strcmp(tok{end}, 'hermes_20170428_fixation-naturalim_15')
+                trialsChosen = trialsChosen(1:18);
+            end
+            analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd))
         end
-        analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd))
-    end
 end
 
 % Save Baseline TFR
-if (allCfg.runBaseline && allCfg.runTFR); runTFR_Baseline(); end
-if (allCfg.runSFC && allCfg.Baseline); runSFC_Baseline(); end
-if (allCfg.STA && allCfg.Baseline); runSTA_Baseline(); end
+if (allCfg.runBaseline && allCfg.runTFR); runTFR_Baseline(allCfg, lfpClean); end
+if (allCfg.runSFC && allCfg.Baseline); runSFC_Baseline(allCfg, lfpClean, spikeClean); end
+if (allCfg.runSTA && allCfg.Baseline); runSTA_Baseline(allCfg, lfpClean, spikeClean); end
 end
 %% Subfunctions
 
 %% TFR Baseline
-function runTFR_Baseline()
+function runTFR_Baseline(allCfg, lfpClean)
+savename = allCfg.outputfile;
+
 cfg = [];
 cfg.trials = 'all';
 cfg.toilim = allCfg.timeBaseline
@@ -213,7 +217,9 @@ clear powerBaseline
 end
 
 %% SFC Baseline
-function runSFC_Baseline()
+function runSFC_Baseline(allCfg, lfpClean, spikeClean)
+savename = allCfg.outputfile;
+
 % Select spike
 nChan = length(spikeClean.trial);
 cfg = [];
@@ -252,7 +258,9 @@ clear stSpecBaseline
 end
 
 %% STA Baseline
-function runSTA_Baseline()
+function runSTA_Baseline(allCfg, lfpClean, spikeClean)
+savename = allCfg.outputfile;
+
 % Append spike
 data_lfp = baselineDataLP;
 data_lfp.hdr = data.hdr;

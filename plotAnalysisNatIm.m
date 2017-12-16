@@ -7,10 +7,9 @@ clear all; close all; userpath('clear'); userpath('reset');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 batchTag = '';  %analysis tag
 sesType = 'NatImFix'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
-monkeyName = 'Hermes'; % 'Hermes' 'Isis'
-saveMonkey = fullfile('/mnt/v7k/projects/MWNaturalPredict/Figures/', sesType, monkeyName);
-dirMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis', sesType, monkeyName);
 
+dataDir = '/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis';
+saveDir = '/mnt/v7k/projects/MWNaturalPredict/Figures/';
 sessionList = {...
     %     'ares027a01', ...
     %     'ares027a02', ...
@@ -18,14 +17,14 @@ sessionList = {...
     %     'ares029a01', ...
     %     'ares030a01', ...
     %     'ares030a02', ...
-%     'ares033a02',...
-%     'ares033a03',...
+    %     'ares033a02',...
+    %     'ares033a03',...
+    %     'ares034a03',...
+    % 'hermes_20171201_fixation-naturalim_90'
 %     'ares034a03',...
-'hermes_20171201_fixation-naturalim_90'
+%     'ares034a04',...
+    'hermes_20171201_fixation-naturalim_90'
     };
-
-saveMonkey = fullfile(saveMonkey, sessionList);
-dirMonkey = fullfile(dirMonkey, sessionList);
 %% Functions
 
 layType = 'stimuli';
@@ -41,8 +40,9 @@ for power2 = powerLib
         if strcmp(monkeyName, 'herm'); monkeyName = 'Hermes'; end
         if strcmp(monkeyName, 'ares'); monkeyName = 'Ares'; end
         if strcmp(monkeyName, 'isis'); monkeyName = 'Isis'; end
-        newSave = saveMonkey{ses};
-        newDir = dirMonkey{ses};
+        
+        newDir = fullfile(dataDir, sesType, monkeyName, sessionList{ses});
+        newSave = fullfile(saveDir, sesType, monkeyName, sessionList{ses});
         
         if ~exist(newSave, 'dir')
             mkdir(newSave); mkdir(fullfile(newSave, 'data'));
@@ -64,7 +64,7 @@ for power2 = powerLib
         
         % do
         cfg{n}.do_timelockLFP = false;
-        cfg{n}.do_timelockMUAX = false;
+        cfg{n}.do_timelockMUAX = true;
         cfg{n}.do_trialPSTH = true;
         cfg{n}.do_lfpPower = false;
         cfg{n}.do_lfpPower2 = power2;
@@ -72,8 +72,10 @@ for power2 = powerLib
         cfg{n}.do_stSpecPerTrial = false;
         cfg{n}.onIm = false;
         cfg{n}.isOri = false;
-        cfg{n}.isShaded = false;
         cfg{n}.isPred = false;
+        cfg{n}.isCorr = false;
+        cfg{n}.isGroup = false;
+        cfg{n}.isShaded = false;
         cfg{n}.window_rate = [0.05 0.15; 0.25 0.75];
         cfg{n}.window_freq = [40 70; 80 120];
         

@@ -4,8 +4,8 @@ if strcmp(allCfg.name, 'Isis')
     logPath = dir(fullfile(dataDirSes, '*_MatLog.mat'));
     load(fullfile(dataDirSes, logPath.name));
     stimList = vertcat({Config.Protocol.ImageList.name});
-    
-    stimsetAll = '/mnt/v7k/home/uranc/workspace/VinckLab/Dataset/Processed/_6flickr/stimsetChosen/Andreea';
+    %     stimsetAll = '/mnt/v7k/home/uranc/workspace/VinckLab/Dataset/Processed/_6flickr/stimsetChosen/Andreea';
+    stimsetAll = '/mnt/hpx/projects/MWNaturalPredict/Isis/Stimuli';
     sesNo = []; stimDir = '';
     for is = 1:length(stimList)
         stimParam = strsplit(stimList{is}, '_');
@@ -28,7 +28,7 @@ elseif strcmp(allCfg.name, 'Hermes')
 elseif strcmp(allCfg.name, 'Ares')
     logPath = dir(fullfile(dataDirSes, '*_MatLog.mat'));
     load(fullfile(dataDirSes, logPath.name));
-    stimsetAll = '/mnt/v7k/home/uranc/workspace/VinckLab/Dataset/Processed/_6flickr/stimsetChosen';
+    stimsetAll = '/mnt/hpx/projects/MWNaturalPredict/Ares/Stimuli';
     if strcmp(allCfg.type, 'NatImFix')
         stimList = vertcat({Config.Protocol.ImageList.name});
         sesNo = []; stimDir = '';

@@ -5,14 +5,11 @@ clear all; close all; userpath('clear'); userpath('reset');
 % cem.uran@esi-frankfurt.de
 % 09/07/17
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-batchTag = '4sigma';  %analysis tag
+batchTag = '';  %analysis tag
 sesType = 'NatImFix'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
-monkeyName = 'Hermes'; % 'Hermes' 'Isis'
-dirMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict', monkeyName, sesType);
-saveMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis', sesType, monkeyName);
 
-% sessionList = dir(fullfile(dirMon, '*fixation-naturalim_*'));
-% % sessionList = vertcat({sessionList.name});
+dataDir = '/mnt/hpx/projects/MWNaturalPredict';
+saveDir = '/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis';
 
 sessionList = {...
     % 'ares022a03', ...
@@ -30,14 +27,12 @@ sessionList = {...
     % 'ares030a02', ...
     % 'ares033a02', ...
     %     'ares033a03', ...
-    %     'ares034a03', ...
-    'hermes_20170808_rfmapping-bar_1'
+    %     'hermes_20170808_rfmapping-bar_1'
+%     'ares034a03', ...
+    'ares034a04', ...
     };
 
 %% Functions
-saveMonkey = fullfile(saveMonkey, sessionList);
-dirMonkey = fullfile(dirMonkey, sessionList);
-
 cfg = [];
 n = 0;
 for ses = 1:length(sessionList)
@@ -48,8 +43,9 @@ for ses = 1:length(sessionList)
     if strcmp(monkeyName, 'herm'); monkeyName = 'Hermes'; end
     if strcmp(monkeyName, 'ares'); monkeyName = 'Ares'; end
     if strcmp(monkeyName, 'isis'); monkeyName = 'Isis'; end
-    newSave = saveMonkey{ses};
-    newDir = dirMonkey{ses};
+    
+    newSave = fullfile(saveDir, sesType, monkeyName, sessionList{ses});
+    newDir = fullfile(dataDir, monkeyName, sesType, sessionList{ses});
     
     if ~exist(newSave, 'dir')
         mkdir(newSave); mkdir(fullfile(newSave, 'data'));
@@ -67,13 +63,13 @@ for ses = 1:length(sessionList)
     cfg{n}.getBadChannels = false;
     
     % set analysis options
-    cfg{n}.runBaseline = false;
+    cfg{n}.runBaseline = true;
     cfg{n}.runErrorBars = false;
     cfg{n}.runPSTH = true;
     cfg{n}.runTimelockLFP = true;
     cfg{n}.runTimelockMUAX = true;
     cfg{n}.runConnectivity = false;
-    cfg{n}.runTFR = false;
+    cfg{n}.runTFR = true;
     cfg{n}.runSTA = false;
     cfg{n}.runSFC = false;
     
