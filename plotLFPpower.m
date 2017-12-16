@@ -1,4 +1,5 @@
 function plotLFPpower(allCfg, allFiles, thisFile, layout)
+% plots LFP Power in various forms
 addpath('/mnt/v7k/home/uranc/workspace/Source/export_fig/')
 savename = allCfg.outputfile;
 % flatten data
