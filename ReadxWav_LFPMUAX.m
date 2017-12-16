@@ -40,19 +40,19 @@ for ses = 1:length(sessionList)
     pathXWav = dir(fullfile(dataDirSes, '*.sev'));  % get raw data
     
     %% RAW to MUAX / LFP
-%     cfg = [];
-%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-%     cfg.targetFolder = outputDirSes;
-%     cfg.calcLocation = 'local';
-%     tdt_preprocessing_AP(cfg);
-%     
-%     cfg = [];
-%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-%     cfg.targetFolder = outputDirSes;
-%     cfg.calcLocation = 'local';
-%     cfg.pSigma = 3; % amp. threshold pSigma*median(abs(x)/0.6745)) % Quian Quiroga et al. (2004)
-%     cfg.pISI = 1.5; % min ISI interval in ms  %peakseak Peter O'Connor
-%     tdt_extractspikes_AP(cfg);
+    cfg = [];
+    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+    cfg.targetFolder = outputDirSes;
+    cfg.calcLocation = 'local';
+    tdt_preprocessing_AP(cfg);
+    
+    cfg = [];
+    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+    cfg.targetFolder = outputDirSes;
+    cfg.calcLocation = 'local';
+    cfg.pSigma = 3; % amp. threshold pSigma*median(abs(x)/0.6745)) % Quian Quiroga et al. (2004)
+    cfg.pISI = 1.5; % min ISI interval in ms  %peakseak Peter O'Connor
+    tdt_extractspikes_AP(cfg);
     
     %% ESIload the files
     pathLfp = dir(fullfile(outputDirSes, '*_xWav.lfp'));

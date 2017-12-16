@@ -1,5 +1,4 @@
-function [meanLum, rmsContrast, weightedAverageMask, varargout] = getImStat(varargin)
-
+function [meanLum, rmsContrast, weightedAverageMask, varargout] = getStatForPatch(varargin)
 % Computes the luminance, contrast of a given image
 im = double(varargin{1});
 if nargin == 2

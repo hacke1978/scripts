@@ -34,7 +34,7 @@ base = cat(3, powerBaseline.powspctrm);
 % powerBaseline = cat(2, allFiles(end).(thisFile));
 % baseline = cat(3, powerBaseline.powspctrm);
 
-if allCfg.isShaded
+if allCfg.withErrorBars
     lfpVar = zeros([size(allFiles(1).lfpPowerVar(1).powspctrm) nCond]);
     for ii=1:nCond
         if isfield(allCfg, 'nConds')
@@ -102,7 +102,7 @@ if strcmp(allCfg.layout, 'channels')
             % baseline normalized
             figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
             subplot(nr, nc, nd);
-            if allCfg.isShaded
+            if allCfg.withErrorBars
                 shadedErrorBar(xLab, log10(data(ch, :, cnd)./(1e-20+baseline(ch, :))), ...
                     lfpVar(ch, :, cnd), 'lineprops', 'r', 'transparent', 1); hold on;
             else
@@ -113,7 +113,7 @@ if strcmp(allCfg.layout, 'channels')
             xlim([10 120]); %ylim([-0.2 1]);
             sel = 10 < xLab & xLab < 120;
             if allCfg.normalize
-                if allCfg.isShaded
+                if allCfg.withErrorBars
                     ylim([min(min(log10((data(caccept, sel, cnd))./(1e-20+baseline(caccept, sel)))-lfpVar(caccept, sel, cnd))) ...
                         max(max(log10((data(caccept, sel, cnd))./(1e-20+baseline(caccept, sel)))+lfpVar(caccept, sel, cnd)))]);
                 else
@@ -129,7 +129,7 @@ if strcmp(allCfg.layout, 'channels')
             %                 % gray normalized
             %                 figure(h3); if allCfg.print; set(h3, 'Visible', 'off'); end;
             %                 subplot(nr, nc, nd);
-            %                 if allCfg.isShaded
+            %                 if allCfg.withErrorBars
             %                     shadedErrorBar(xLab, log10(data(ch, :, cnd)./(1e-20+baseline(ch, :))), lfpVar(ch, :, cnd), 'r', 1); hold on;
             %                 else
             %                     plot(xLab, log10(data(ch, :, cnd)./(1e-20+data(ch, :, probGrayInd))), 'r'); hold on;
@@ -137,7 +137,7 @@ if strcmp(allCfg.layout, 'channels')
             %                 %             ylim([min(log10(data(ch, :, cnd)./(1e-20+data(ch, :, probGrayInd)))) max(log10(data(ch, :, cnd)./(1e-20+data(ch, :, probGrayInd))))]);
             %                 sel = 10 < xLab & xLab < 120;
             %                 if allCfg.normalize
-            %                     if allCfg.isShaded
+            %                     if allCfg.withErrorBars
             %                         ylim([min(min((log10(data(caccept, sel, cnd)./(data(caccept, sel, probGrayInd)))-lfpVar(caccept,sel,cnd)))) ...
             %                             max(max(log10((data(caccept, sel, cnd)./(1e-20+data(caccept, sel, probGrayInd))))+lfpVar(caccept,sel,cnd)))]);
             %                     else
@@ -246,7 +246,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
             figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
             subplot(nr, nc, nd)
             plot(xLab, mean(squeeze(log10(data(ch, :, :)./repmat(1e-20+baseline(ch, :), 1, 1, nCond))), 2), '--', 'Color', [0.5 0.5 0.5]); hold on;
-            if allCfg.isShaded
+            if allCfg.withErrorBars
                 shadedErrorBar(xLab, log10(data(ch, :, cnd)./(1e-20+baseline(ch, :))), ...
                     lfpVar(ch, :, cnd), 'lineprops', 'r', 'transparent', 1); hold on;
             else
@@ -281,7 +281,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
             %             if ~strcmp(allCfg.type, 'grating-ori')
             %                 figure(h3); if allCfg.print; set(h3, 'Visible', 'off'); end;
             %                 subplot(nr, nc, nd)
-            %                 if allCfg.isShaded
+            %                 if allCfg.withErrorBars
             %                     shadedErrorBar(xLab, log10(data(ch, :, cnd)./(1e-20+data(ch, :, probGrayInd))), ...
             %                         lfpVar(ch, :, cnd), 'lineprops', 'r', 'transparent', 1); hold on;
             %                 else
@@ -290,7 +290,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
             %                 title(sprintf('cond%02d', cnd), 'FontWeight', 'bold', 'FontSize', 5);
             %                 xlim([10 120]); %ylim([-0.2 1]);
             %                 if allCfg.normalize
-            %                     if allCfg.isShaded
+            %                     if allCfg.withErrorBars
             %                         ylim([min(min(log10((data(ch, sel, :))./repmat(1e-20+baseline(ch, sel), 1, 1, size(data, 3)))-lfpVar(ch,sel,:))) ...
             %                             max(max(log10((data(ch, sel, :))./repmat(1e-20+baseline(ch, sel), 1, 1, size(data, 3)))+lfpVar(ch,sel,:)))]);
             %                     else

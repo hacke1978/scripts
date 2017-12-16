@@ -29,7 +29,7 @@ if catCfg(1).isGroup
     if ~exist(poolCfg.outputfile, 'dir'); mkdir(poolCfg.outputfile); end
     plot_all(poolCfg, poolFiles);
     plotPatchFromIm(poolCfg, poolFiles);
-end
+
 
 if catCfg(1).isCorr
     % plot group stuff
@@ -40,4 +40,6 @@ if catCfg(1).isCorr
     corrCfg.do_lfpPower2 = allCfg{1}.do_lfpPower2;
     corrCfg.isOri = false;
     plotCorrelations(corrCfg, out);
+end
+
 end

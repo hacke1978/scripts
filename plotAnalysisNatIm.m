@@ -70,12 +70,12 @@ for power2 = powerLib
         cfg{n}.do_lfpPower2 = power2;
         cfg{n}.do_stSpec = false;
         cfg{n}.do_stSpecPerTrial = false;
+        cfg{n}.withErrorBars = false;
         cfg{n}.onIm = false;
         cfg{n}.isOri = false;
         cfg{n}.isPred = false;
         cfg{n}.isCorr = false;
         cfg{n}.isGroup = false;
-        cfg{n}.isShaded = false;
         cfg{n}.window_rate = [0.05 0.15; 0.25 0.75];
         cfg{n}.window_freq = [40 70; 80 120];
         

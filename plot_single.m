@@ -32,7 +32,7 @@ elseif strcmp(thisFile, 'stSpec')
         tlabel(find(strncmp(tlabel, 'X', 1))) = {'127'};
     end
     tx = allThis(1).freq;
-    if allCfg.isShaded
+    if allCfg.withErrorBars
         stsVar = zeros([size(allFiles(1).stSpecPerTrial(1).ppc1) size(allFiles, 2) size(allFiles(1).stSpecPerTrial, 1)]);
         for ii=1:size(allFiles, 2)
             for ch=1:size(allFiles(1).stSpecPerTrial, 1)
@@ -108,7 +108,7 @@ elseif strcmp(thisFile, 'trialPSTH')
     tx = allThis(1).time;
     data = cat(3, allThis.avg);
     
-    if allCfg.isShaded
+    if allCfg.withErrorBars
         data_var = cat(2, allFiles.trialPSTHVar);
         data_var = sqrt(cat(3, data_var.var)/length(data_var));
         shaded = 1;
