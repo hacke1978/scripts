@@ -38,13 +38,10 @@ else
     % choose where to compute
     switch calcLocation
         case 'slurm'
-            originalDirectory = pwd();
-            cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
             license('inuse')
             slurmfun(@getRFfromMUA, cfg, 'partition', '16GB', 'useUserPath', true, 'waitForToolboxes', {'statistics_toolbox', 'curve_fitting_toolbox', 'image_toolbox'});
-            cd(originalDirectory);
         case 'local'
-            cellfun(@getRFfromMUA, cfg, 'UniformOutput', false)
+            cellfun(@getRFfromMUA, cfg(1), 'UniformOutput', false)
     end
     
 end

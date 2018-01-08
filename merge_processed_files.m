@@ -30,11 +30,11 @@ data.sampleinfo = [1 nSamples];
 % channel labels
 data.label = cell(nChannels,1);
 if any(firstFile.header.channelNum) %not zero as in Atos
-    data.label{1} = sprintf('%s_ch%04d', firstFile.datatype, firstFile.header.channelNum);
+    data.label{1} = sprintf('%s-ch%03d', firstFile.datatype, firstFile.header.channelNum);
 else
     [~,fname,~]=fileparts(files{1});
     tok = strsplit(fname, '_');
-    data.label{1} = sprintf('%s_%s', firstFile.datatype, tok{end});
+    data.label{1} = sprintf('%s-%s', firstFile.datatype, tok{end});
 end
 
 clear firstFile
@@ -52,11 +52,12 @@ for iFile = 2:nChannels
     
     data.trial{1}(chNum,:) = currentFile.data;
     if any(currentFile.header.channelNum) %not zero as in Atos
-        data.label{chNum} = sprintf('%s_ch%04d', currentFile.datatype, currentFile.header.channelNum);
+        data.label{chNum} = sprintf('%s-%03d', currentFile.datatype, currentFile.header.channelNum);
     else
         [~,fname,~]=fileparts(files{iFile});
         tok = strsplit(fname, '_');
-        data.label{chNum} = sprintf('%s_%s', currentFile.datatype, tok{end});
+        chn = tok{end};
+        data.label{chNum} = sprintf('%s-%s', currentFile.datatype, chn(3:end));
     end
 end
 

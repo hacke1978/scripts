@@ -6,7 +6,7 @@ clear all; close all; userpath('clear'); userpath('reset');
 % 09/07/17
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 batchTag = '';  %analysis tag
-sesType = 'NatImFix'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
+sesType = 'grating-ori'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
 
 dataDir = '/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis';
 saveDir = '/mnt/v7k/projects/MWNaturalPredict/Figures/';
@@ -23,7 +23,7 @@ sessionList = {...
     % 'hermes_20171201_fixation-naturalim_90'
 %     'ares034a03',...
 %     'ares034a04',...
-    'hermes_20171201_fixation-naturalim_90'
+    'hermes_20171208_fixation-grating-orientation-v2_2'
     };
 %% Functions
 
@@ -64,7 +64,7 @@ for power2 = powerLib
         
         % do
         cfg{n}.do_timelockLFP = false;
-        cfg{n}.do_timelockMUAX = true;
+        cfg{n}.do_timelockMUAX = false;
         cfg{n}.do_trialPSTH = true;
         cfg{n}.do_lfpPower = false;
         cfg{n}.do_lfpPower2 = power2;

@@ -208,7 +208,8 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 baseline = base(:, :, 1);
             end
             if strcmp(allCfg.type, 'grating-ori')
-                tok = cellfun(@(x) strsplit(x, '/'), {allFiles.imName}, 'UniformOutput', false);
+%                 tok = cellfun(@(x) strsplit(x, '/'), {allFiles.imName}, 'UniformOutput', false);
+                tok = cellfun(@(x) strsplit(x, '/'), {allFiles.condName}, 'UniformOutput', false);
                 tok = vertcat(tok{:});
                 sp = cellfun(@(x) strsplit(x, '_'), tok(:, end), 'UniformOutput', false);
                 sp = vertcat(sp{:});

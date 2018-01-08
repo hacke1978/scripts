@@ -66,7 +66,6 @@ if cfg.processSpike
     %     spikeTrain = zeros(size(mua.data));
     %     spikeTrain(spikes) = 1;
     muat.data = spikes/muat.fsample;
-    
     muat = {muat};
     % save
     if cfg.save

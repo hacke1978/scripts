@@ -17,7 +17,7 @@ outputDirSes = filename;
 % savename = allCfg.outputfile
 
 % Load the data
-if strcmp(allCfg.name, 'hermes')
+if strcmp(allCfg.name, 'Hermes')
     pathLFP = dir(fullfile(filename, '*stimOn.lfp'));
     pathMUAX = dir(fullfile(filename, '*stimOn.muax'));
     pathSpike = dir(fullfile(filename, sprintf('*%s_chopped.spike', allCfg.tag)));
@@ -26,11 +26,13 @@ else
     pathMUAX = dir(fullfile(filename, '*_chopped.muax'));
     pathSpike = dir(fullfile(filename, sprintf('*%s_chopped.spike', allCfg.tag)));
 end
+
 load(fullfile(filename, pathLFP.name), '-mat');
 lfp.data = data; clear data;
 load(fullfile(filename, pathMUAX.name), '-mat');
 muax.data = data; clear data;
 load(fullfile(filename, pathSpike.name), '-mat');
+spike.timestamp = spike.time;
 
 % get conditions / channels
 if strcmp(allCfg.name, 'Hermes')
@@ -121,6 +123,7 @@ cfg = [];
 cfg.trials = taccept';
 cfg.channel = find(caccept);
 lfpClean = ft_selectdata(cfg, lfp.data);
+
 
 cfg = [];
 cfg.trials = find(taccept)';

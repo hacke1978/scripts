@@ -29,10 +29,10 @@ end
 
 switch cfg.calcLocation
     case 'slurm'
-        originalDirectory = pwd();
-        cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
-        out = slurmfun(@extract_spikes, allCfg, 'partition', '8GBS', 'useUserPath', true, 'waitForToolboxes', {'signal_toolbox'});
-        cd(originalDirectory);
+%         originalDirectory = pwd();
+%         cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
+        out = slurmfun(@extract_spikes, allCfg, 'partition', '16GB', 'useUserPath', true, 'waitForToolboxes', {'signal_toolbox'});
+%         cd(originalDirectory);
     case 'local'
         out = cellfun(@extract_spikes, allCfg, 'UniformOutput', false);
 end

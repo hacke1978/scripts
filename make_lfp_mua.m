@@ -1,4 +1,5 @@
 function [outFile] = make_lfp_mua(cfg)
+addpath('/opt/ESIsoftware/matlab/')
 % Create LFP and MUA files from SEV files
 file = cfg.filename;
 [folder, basename, ext] = fileparts(file);
@@ -25,6 +26,7 @@ if ~isfield(header,'Fs')
     header.Fs=2.441406250000000e+04; %fix for Atos, weird header.
 end
 
+header.channelNum = 0;
 %% LFP
 lfp = [];
 if cfg.processLfp

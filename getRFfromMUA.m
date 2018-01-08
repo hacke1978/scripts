@@ -17,6 +17,7 @@ libCond = unique(Cond);
 nCond = length(unique(Cond));
 assert(nCond == length(orient), 'nCond does not match orientations')
 for ch=(caccept) % For each channel
+    allDev = []; GPSTH = {};
     for cn =1:nCond
         cnd = libCond(cn);
         % Get all trials for a condition
@@ -25,27 +26,29 @@ for ch=(caccept) % For each channel
         cfg = [];
         cfg.edges = edges;
         % z-score
-        GPSTH{cnd} = zscore(getGPSTHfromMUA(cfg, muat.data, ch, trialsChosen));
+        [tmpGPSTH, devGPSTH] = getGPSTHfromMUA(cfg, muat.data, ch, trialsChosen);
+        GPSTH{cnd} = zscore(tmpGPSTH); allDev = [allDev; devGPSTH];
     end
     [gMap, gLatency] = getResponseLatency(GPSTH, edges(1:end-1));
     rfMap = imresize(gMap, [norm(screenSize) norm(screenSize)]);
     mapSize = size(rfMap);
     cropSize = [mapSize/2-screenSize/2+1  mapSize/2+screenSize/2];
     rfMap = flipud(fliplr(rfMap(cropSize(2):cropSize(4), cropSize(1):cropSize(3))));
-    zMap = zscore(rfMap); max(abs(zMap(:)))
+    zMap = zscore(rfMap); max(abs(zMap(:)));
     % fit gaussian
     GPSTH = vertcat(GPSTH{:});
     sh = figure; set(sh, 'Visible', 'off');
     for ii = 1:size(GPSTH, 1)
         d = zscore(GPSTH(ii, :));
         %         d(abs(d)<2) = 0;
-        [maxVal, ind ]= max(d(20:end-20));
+        [maxVal, ind ]= max(d(40:end-40));
+        ind = ind + 40;
         x = 1/size(d, 2):1/size(d, 2):(size(d, 2))/size(d,2);
         options = fitoptions('gauss1');
-        options.startPoint = [maxVal x(ind) 0.005];
-        options.Lower = [2 0.25  5/size(d,2)];
-        options.Upper = [10 0.75 0.5];
-        options.Robust = 'Off';
+        options.startPoint = [d(ind) x(ind) 0.005];
+        options.Lower = [1 0.25  5/size(d,2)];
+        options.Upper = [10 0.75 100/size(d,2)];
+                options.Robust = 'Off';
         dSmooth = d-mean(d);
         gaussFit{ii} = fit(x', dSmooth', 'gauss1', options);
         fitDist{ii} = gaussFit{ii}.a1*exp(-((x-gaussFit{ii}.b1)/gaussFit{ii}.c1).^2)...
@@ -67,16 +70,34 @@ for ch=(caccept) % For each channel
         plot( xCutOff{ii},gaussFit{ii}.a1*exp(-((xCutOff{ii}-gaussFit{ii}.b1)/gaussFit{ii}.c1).^2)...
             +mean(d), 'r.'); hold on;
         plot( xPeak{ii} ,yPeak{ii} , 'r.'); hold on;
-        title(sprintf('%.2f, %.2f, %.2f, %.2f', mean(d), median(d), sum(d)))
+        plot(x(ind), d(ind), 'g');
+        [mVal, mInd] = max(GPSTH(:, 40:end-40), [], 2);
+        mInd = mInd + 40; mInt = round(mInd-degDistances(1)/8+1:mInd+degDistances(1)/8);
+%         mInt = true(size(allDev, 2));
+        fanoWindow = allDev(:, mInt);
+        fano = abs(mean(fanoWindow.^2./GPSTH(:, mInt), 2));
+%         fano = abs(mean(allDev/GPSTH, 2));
+%         fano = abs(diag(allDev(:, mInd)).^2./mVal);
+        title(sprintf('%.2f, %.2f, %.2f, %.2f', ...
+            mean(allDev(ii, :)), max(GPSTH(ii,:)), mean(allDev(ii, :))/max(GPSTH(ii,:)), fano(ii) ));
     end
     print(strcat(savename,'_RFPSTHFit.png'), '-dpng', '-r300')
-
+    close; h = figure; set(h, 'visible', 'off');
+    imagesc(rfMap);
+    print(strcat(savename, '_RFEllipseFit.png'), '-dpng', '-r300');
+    close;
+    %% RF Criteria which is yet to be tested
+    if ~( mean(allDev(:)) < 0.95 && mean(max(GPSTH, [], 2)) > 3)
+        continue
+    end
+%     todel = abs(zscore(fano))>1.98;
+    todel = mean(allDev, 2)/max(GPSTH, [], 2) > .3;
     allPeak = ((vertcat(yPeak{:})));
     allCenter = (vertcat(xPeak{:})-0.5)*norm(screenSize);
     allCut = (horzcat(xSTD{:})')*norm(screenSize);
     
     allVal = cellfun(@(cIn) cIn/max([gVal{:}]), gVal, 'UniformOutput', false);
-    %     % Find center
+    % Find center
     rad2Zero = 2*pi-orient;
     if size(GPSTH, 1) == 16
         meanCent = (allCenter(1:8)-allCenter(9:end))/2;
@@ -127,8 +148,8 @@ for ch=(caccept) % For each channel
         disp('center from 2dmap')
     end
     
-    z = zscore(allCut,1);
-    todel = (any(abs(z)>1.65, 2)) ;
+    %     z = zscore(allCut,1);
+    %     todel = todel | (any(abs(z)>1.98, 2)) ;
     %      % Find ellipse points
     
     allCut(:,1) = allCut(:,1);
@@ -140,12 +161,12 @@ for ch=(caccept) % For each channel
         for ii = 1:8
             cnt = cnt + 1;
             w = sum(~todel([ii ii+8]));
-            dx(cnt) = (allCut(ii,1).*cos(orient(ii)) - allCut(ii+8,2).*cos(orient(ii)))/w;
-            dy(cnt) = (allCut(ii,1).*sin(orient(ii)) - allCut(ii+8,2).*sin(orient(ii)))/w;
-            cx1(cnt) = x1 + (allCut(ii,1).*cos(orient(ii)) - allCut(ii+8,2).*cos(orient(ii)))/w;
-            cy1(cnt) = y1 + (allCut(ii,1).*sin(orient(ii)) - allCut(ii+8,2).*sin(orient(ii)))/w;
-            cx2(cnt) = x1 + (allCut(ii,2).*cos(orient(ii)) - allCut(ii+8,1).*cos(orient(ii)))/w;
-            cy2(cnt) = y1 + (allCut(ii,2).*sin(orient(ii)) - allCut(ii+8,1).*sin(orient(ii)))/w;
+            dx(cnt) = (allCut(ii,1).*cos(orient(ii)) - allCut(ii+8,2).*cos(orient(ii)))/(w+1e-14);
+            dy(cnt) = (allCut(ii,1).*sin(orient(ii)) - allCut(ii+8,2).*sin(orient(ii)))/(w+1e-14);
+            cx1(cnt) = x1 + (allCut(ii,1).*cos(orient(ii)) - allCut(ii+8,2).*cos(orient(ii)))/(w+1e-14);
+            cy1(cnt) = y1 + (allCut(ii,1).*sin(orient(ii)) - allCut(ii+8,2).*sin(orient(ii)))/(w+1e-14);
+            cx2(cnt) = x1 + (allCut(ii,2).*cos(orient(ii)) - allCut(ii+8,1).*cos(orient(ii)))/(w+1e-14);
+            cy2(cnt) = y1 + (allCut(ii,2).*sin(orient(ii)) - allCut(ii+8,1).*sin(orient(ii)))/(w+1e-14);
         end
     else
         cnt = 0;
@@ -153,26 +174,32 @@ for ch=(caccept) % For each channel
             w = sum(~todel(ii));
             cnt = cnt + 1;
             w = sum(~todel([ii ii+4]));
-            dx(cnt) = (allCut(ii,1).*cos(orient(ii)) - allCut(ii+4,2).*cos(orient(ii)))/w;
-            dy(cnt) = (allCut(ii,1).*sin(orient(ii)) - allCut(ii+4,2).*sin(orient(ii)))/w;
-            cx1(cnt) = x1 + (allCut(ii,1).*cos(orient(ii)) - allCut(ii+4,2).*cos(orient(ii)))/w;
-            cy1(cnt) = y1 + (allCut(ii,1).*sin(orient(ii)) - allCut(ii+4,2).*sin(orient(ii)))/w;
-            cx2(cnt) = x1 + (allCut(ii,2).*cos(orient(ii)) - allCut(ii+4,1).*cos(orient(ii)))/w;
-            cy2(cnt) = y1 + (allCut(ii,2).*sin(orient(ii)) - allCut(ii+4,1).*sin(orient(ii)))/w;
+            dx(cnt) = (allCut(ii,1).*cos(orient(ii)) - allCut(ii+4,2).*cos(orient(ii)))/(w+1e-14);
+            dy(cnt) = (allCut(ii,1).*sin(orient(ii)) - allCut(ii+4,2).*sin(orient(ii)))/(w+1e-14);
+            cx1(cnt) = x1 + (allCut(ii,1).*cos(orient(ii)) - allCut(ii+4,2).*cos(orient(ii)))/(w+1e-14);
+            cy1(cnt) = y1 + (allCut(ii,1).*sin(orient(ii)) - allCut(ii+4,2).*sin(orient(ii)))/(w+1e-14);
+            cx2(cnt) = x1 + (allCut(ii,2).*cos(orient(ii)) - allCut(ii+4,1).*cos(orient(ii)))/(w+1e-14);
+            cy2(cnt) = y1 + (allCut(ii,2).*sin(orient(ii)) - allCut(ii+4,1).*sin(orient(ii)))/(w+1e-14);
         end
     end
+    tdel = abs(cx1-x1)<1e-1 | abs(cy1-y1)<1e-1;
+    tdel2 = abs(cx2-x1)<1e-1 | abs(cy2-y1)<1e-1;
+    cx1(tdel) = []; cy1(tdel) = [];
+    cx2(tdel2) = []; cy2(tdel2) = [];
     h = figure; set(h, 'Visible', 'off');
     imagesc(rfMap); hold on;
     hold on, plot(cx1,cy1,'k.'), hold on, plot(x1,y1,'r.'), hold on, plot(cx2,cy2,'k.');
     
     try
-        [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'trace');
+%         [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'trace');
+    [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'bookstein');
     catch
-        [a,b, x0, y0, phi] = ellipse_fit([cx1(:) cx2(:)], [cy1(:) cy2(:)]);
+        [a, b, x0, y0, phi] = ellipse_fit([cx1(:) cx2(:)], [cy1(:) cy2(:)]);
         z = zeros(2,1);
         z(1) = x0; z(2) = y0;
     end
     x0 = z(1); y0 = z(2);
+    [a, b, x0, y0, phi]
     hold on, ellipsedraw(a,b,x0,y0,phi,'k', [128 128], 0);
     print(strcat(savename, '_RFEllipseFit.png'), '-dpng', '-r300');
     RF.centerposx = x0;
@@ -216,17 +243,24 @@ end
 gMap = allMap{ind}; gLatency = respLatency(ind);
 end
 
-function [GPSTH] = getGPSTHfromMUA(cfg, MUA, ch, trialsChosen)
+function [GPSTH, devGPSTH] = getGPSTHfromMUA(cfg, MUA, ch, trialsChosen)
 % smooth the MUA and correct for the response latency
 edges = cfg.edges;
 allMUA = zeros(length(trialsChosen), length(edges));
 for ii=1:numel(trialsChosen)
     allMUA(ii, :) = hist(MUA.trial{ch, trialsChosen(ii)}, edges);
 end
-sigma = 2;
+sigma = 2.5;
 cutoff = ceil(3*sigma);
 GaussianK = fspecial('gaussian',[1,2*cutoff+1],sigma); % 1D filter
-GPSTH = conv(mean(allMUA(:, 1:end-1)),GaussianK,'same');
+% GPSTH = zscore(conv(mean(allMUA(:, 1:end-1)),GaussianK,'same'));
+
+allGPSTH = [];
+for tr=1:size(allMUA, 1)
+    GPSTH = zscore(conv((allMUA(tr, 1:end-1)),GaussianK,'same'));
+    allGPSTH = [allGPSTH; GPSTH];
+end
+clear GPSTH; GPSTH = mean(allGPSTH, 1); devGPSTH = std(allGPSTH, [], 1);
 %Save them
 % fname = fullfile(outputDirSes, 'data', sprintf('RF_isisc420a01_Ch_%02d_gpsth.mat', ch));
 % save(fname, 'GPSTH');

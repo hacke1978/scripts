@@ -5,11 +5,11 @@ addpath /mnt/hpx/opt/ESIsoftware/slurmfun/
 
 switch calcLocation
     case 'slurm'
-        originalDirectory = pwd();
-        cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
+%         originalDirectory = pwd();
+%         cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
         license('inuse')
         slurmfun(@analyze_RFmaps, allCfg, 'partition', '8GBS', 'useUserPath', true, 'waitForToolboxes', {'statistics_toolbox', 'signal_toolbox'});
-        cd(originalDirectory);
+%         cd(originalDirectory);
     case 'local'
         cellfun(@analyze_RFmaps, allCfg, 'UniformOutput', false)
  end

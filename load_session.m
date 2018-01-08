@@ -71,6 +71,12 @@ for nf = 1:nFiles
         else
             ESIload(fullfile(filename, thisVar(cnd).name));
             allFiles(cnd).(vname(6:end)) = eval(vname(6:end));
+            if ~isfield(allFiles, 'condName')
+                allFiles(cnd).condName = thisVar(cnd).name;
+                thisNF = nf;
+            elseif nf == thisNF
+                allFiles(cnd).condName = thisVar(cnd).name;
+            end
         end
     end
 end

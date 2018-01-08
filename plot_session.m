@@ -58,9 +58,9 @@ if strcmp(allCfg.name, 'Hermes')
         fname = fullfile(dataDir, sprintf('grating-ori'))
     else
         fname = fullfile(dataDir, sprintf('stimset%02d', str2num(tok{end})))
+        imList = getImListForSession(allCfg, fname);
+        [allFiles.imName] = deal(imList{:});
     end
-    imList = getImListForSession(allCfg, fname);
-    [allFiles.imName] = deal(imList{:});
     allFiles(1).RFs = RFs;
     allFiles(1).stimCenter = stimCenter;
     allFiles(1).caccept = caccept;

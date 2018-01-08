@@ -6,7 +6,7 @@ clear all; close all; userpath('clear'); userpath('reset');
 % 09/07/17
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 batchTag = '';  %analysis tag
-sesType = 'NatImFix'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
+sesType = 'grating-ori'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
 
 dataDir = '/mnt/hpx/projects/MWNaturalPredict';
 saveDir = '/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis';
@@ -29,7 +29,11 @@ sessionList = {...
     %     'ares033a03', ...
     %     'hermes_20170808_rfmapping-bar_1'
 %     'ares034a03', ...
-    'ares034a04', ...
+%     'ares034a04', ...
+% 'hermes_20170519_fixation-color-masksize_42'
+'hermes_20171208_fixation-grating-orientation-v2_2',...
+% 'hermes_20171211_fixation-grating-orientation-v2_3',...
+% 'hermes_20171212_fixation-grating-orientation-v2_4',...
     };
 
 %% Functions
@@ -59,7 +63,7 @@ for ses = 1:length(sessionList)
     cfg{n}.tag = batchTag;
     
     % set processing
-    cfg{n}.filterLineNoise = ~strcmp(monkeyName, 'hermes');
+    cfg{n}.filterLineNoise = ~strcmp(monkeyName, 'Hermes');
     cfg{n}.getBadChannels = false;
     
     % set analysis options

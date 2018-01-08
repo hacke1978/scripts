@@ -1,4 +1,5 @@
 function tdt_preprocessing_AP(cfg)
+addpath('/opt/ESIsoftware/slurmfun/')
 if ~exist('cfg', 'var'); cfg = []; end
 
 if ~isfield(cfg, 'filename')
@@ -33,10 +34,11 @@ end
 
 switch cfg.calcLocation
     case 'slurm'
-        originalDirectory = pwd();
-        cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
-        out = slurmfun(@make_lfp_mua, allCfg, 'partition', '8GBS',  'waitForToolboxes', {'signal_toolbox'}, 'stopOnError', false);
-        cd(originalDirectory);
+%         originalDirectory = pwd();
+%         cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
+        license('inuse')
+        out = slurmfun(@make_lfp_mua, allCfg, 'partition', '16GB',  'waitForToolboxes', {'signal_toolbox'}, 'stopOnError', false);
+%         cd(originalDirectory);
     case 'local'
         out = cellfun(@make_lfp_mua, allCfg, 'UniformOutput', false);
 end

@@ -113,7 +113,8 @@ elseif strcmp(thisFile, 'trialPSTH')
         data_var = sqrt(cat(3, data_var.var)/length(data_var));
         shaded = 1;
     end
-    txlim = [min(tx) max(tx)];
+%     txlim = [min(tx) max(tx)];
+txlim = [min(tx) 1.2];
 else
     warning('Nothing to plot / not defined')
     return
@@ -219,7 +220,8 @@ else
         h = figure(); if allCfg.print; set(h, 'visible', 'off'); end;
         for cnd=1:nCond
             if strcmp(allCfg.type, 'grating-ori')
-                tok = cellfun(@(x) strsplit(x, '/'), {allFiles.imName}, 'UniformOutput', false);
+%                 tok = cellfun(@(x) strsplit(x, '/'), {allFiles.imName}, 'UniformOutput', false);
+                tok = cellfun(@(x) strsplit(x, '/'), {allFiles.condName}, 'UniformOutput', false);
                 tok = vertcat(tok{:});
                 sp = cellfun(@(x) strsplit(x, '_'), tok(:, end), 'UniformOutput', false);
                 sp = vertcat(sp{:});
