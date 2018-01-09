@@ -87,11 +87,11 @@ for ch=(caccept) % For each channel
     print(strcat(savename, '_RFEllipseFit.png'), '-dpng', '-r300');
     close;
     %% RF Criteria which is yet to be tested
-    if ~( mean(allDev(:)) < 0.95 && mean(max(GPSTH, [], 2)) > 3)
+    todel = mean(allDev, 2)/max(GPSTH, [], 2) > .3;
+    if ~( mean(allDev(:)) < 0.95 && mean(max(GPSTH, [], 2)) > 3 & sum(todel)>4)
         continue
     end
 %     todel = abs(zscore(fano))>1.98;
-    todel = mean(allDev, 2)/max(GPSTH, [], 2) > .3;
     allPeak = ((vertcat(yPeak{:})));
     allCenter = (vertcat(xPeak{:})-0.5)*norm(screenSize);
     allCut = (horzcat(xSTD{:})')*norm(screenSize);

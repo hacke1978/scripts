@@ -15,7 +15,6 @@ allFiles = load_session(allCfg, filename);
 
 %% RF Dir
 if strcmp(allCfg.name, 'Hermes')
-    
     % load/reshape RFs manually for now
     load(fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/RFmaps/', sprintf('GRFs_Fit_%02d.mat', 64)));
     screenSize = [1680 1050];
@@ -27,7 +26,6 @@ if strcmp(allCfg.name, 'Hermes')
         stimCenter = round(fixPoint+(degDistances(1)*[2 6]));
     else
         stimCenter = round(fixPoint+(degDistances(1)*[2 3]));
-        
     end
     for ii=1:64
         RFs(ii).centerposy = screenSize(2) - RFs(ii).centerposy;

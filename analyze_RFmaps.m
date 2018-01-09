@@ -39,9 +39,9 @@ else
     switch calcLocation
         case 'slurm'
             license('inuse')
-            slurmfun(@getRFfromMUA, cfg, 'partition', '16GB', 'useUserPath', true, 'waitForToolboxes', {'statistics_toolbox', 'curve_fitting_toolbox', 'image_toolbox'});
+            slurmfun(@getRFfromMUA, cfg, 'partition', '24GBL', 'useUserPath', true, 'waitForToolboxes', {'statistics_toolbox', 'curve_fitting_toolbox', 'image_toolbox'});
         case 'local'
-            cellfun(@getRFfromMUA, cfg(1), 'UniformOutput', false)
+            cellfun(@getRFfromMUA, cfg, 'UniformOutput', false)
     end
     
 end

@@ -113,8 +113,8 @@ elseif strcmp(thisFile, 'trialPSTH')
         data_var = sqrt(cat(3, data_var.var)/length(data_var));
         shaded = 1;
     end
-%     txlim = [min(tx) max(tx)];
-txlim = [min(tx) 1.2];
+    %     txlim = [min(tx) max(tx)];
+    txlim = [min(tx) 1.2];
 else
     warning('Nothing to plot / not defined')
     return
@@ -212,7 +212,7 @@ if strcmp(allCfg.layout, 'channels')
     end
 else
     if strcmp(allCfg.type, 'grating-ori')
-        nr = 6; nc = 12;
+        nr = 6+1; nc = 12+1;
     else
         nr = ceil(sqrt(nCond)); nc = ceil(sqrt(nCond));
     end
@@ -220,7 +220,7 @@ else
         h = figure(); if allCfg.print; set(h, 'visible', 'off'); end;
         for cnd=1:nCond
             if strcmp(allCfg.type, 'grating-ori')
-%                 tok = cellfun(@(x) strsplit(x, '/'), {allFiles.imName}, 'UniformOutput', false);
+                %                 tok = cellfun(@(x) strsplit(x, '/'), {allFiles.imName}, 'UniformOutput', false);
                 tok = cellfun(@(x) strsplit(x, '/'), {allFiles.condName}, 'UniformOutput', false);
                 tok = vertcat(tok{:});
                 sp = cellfun(@(x) strsplit(x, '_'), tok(:, end), 'UniformOutput', false);
@@ -228,7 +228,7 @@ else
                 sori = cellfun(@(x) str2num(x), sp(:, 2), 'UniformOutput', false);
                 sfreq = cellfun(@(x) str2num(x(1:3)), sp(:, 3), 'UniformOutput', false);
                 orivec = 0:15:165; sfvec = 0.5:0.5:3;
-                ndLib = ((length(orivec)*(cellfun(@(x) (find(x == sfvec)), sfreq)-1))...
+                ndLib = (((length(orivec)+1)*(cellfun(@(x) (find(x == sfvec)), sfreq)-1))...
                     +cellfun(@(x) (find(x == orivec)), sori));
                 nd = ndLib(cnd);
             else
@@ -289,8 +289,43 @@ else
                 set(gca,'LooseInset',get(gca,'TightInset'))
             end
             xlim(txlim);
-            title(sprintf('cond%02d', cnd),'FontSize',5 , 'FontWeight', 'bold');
+            %             title(sprintf('cond%02d', cnd),'FontSize',5 , 'FontWeight', 'bold');
+            %             title(sprintf('sf-%.2f, ori-%.2f', sfreq{cnd}, sori{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
+            if mod(ndLib(cnd), nc)==1
+                title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
+            elseif ceil(ndLib(cnd)/nc)==1
+                title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
+            elseif allCfg.normalize
+                set(gca, 'XTick', []); set(gca, 'YTick', []);
+            end
             set(gca,'FontSize',5)
+        end
+        if strcmp(allCfg.type, 'grating-ori')
+            ndLayout = reshape([1:nr*nc], nc, nr)';
+            for rr=1:nr-1
+                subplot(nr, nc, rr*nc)
+                cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(rr, 1:nc-1)), 'UniformOutput', false);
+                plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r');
+                xlim(txlim);
+                set(gca,'FontSize',5)
+                if allCfg.normalize
+                    ylim([min(min(data(ch, :, :))) max(max(data(ch, :, :)))]);
+                else
+                    ylim([min(data(ch, :, cnd)) max(data(ch, :, cnd))]);
+                end
+            end
+            for cc=1:nc-1
+                subplot(nr, nc, nc*(nr-1)+cc)
+                cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(1:nr-1, cc)), 'UniformOutput', false);
+                plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r');
+                xlim(txlim);
+                set(gca,'FontSize',5)
+                if allCfg.normalize
+                    ylim([min(min(data(ch, :, :))) max(max(data(ch, :, :)))]);
+                else
+                    ylim([min(data(ch, :, cnd)) max(data(ch, :, cnd))]);
+                end
+            end
         end
         if allCfg.print
             figname = sprintf('ch%02d_%s.%s', thisChan, thisFile, allCfg.ext);

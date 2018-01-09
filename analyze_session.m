@@ -32,7 +32,7 @@ lfp.data = data; clear data;
 load(fullfile(filename, pathMUAX.name), '-mat');
 muax.data = data; clear data;
 load(fullfile(filename, pathSpike.name), '-mat');
-spike.timestamp = spike.time;
+spike.time = spike.timestamp;
 
 % get conditions / channels
 if strcmp(allCfg.name, 'Hermes')

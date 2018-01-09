@@ -23,7 +23,8 @@ sessionList = {...
     % 'hermes_20171201_fixation-naturalim_90'
 %     'ares034a03',...
 %     'ares034a04',...
-    'hermes_20171208_fixation-grating-orientation-v2_2'
+%     'hermes_20171208_fixation-grating-orientation-v2_2'
+'hermes_20170425_fixation-grating-orientation-v2_1'
     };
 %% Functions
 
@@ -63,10 +64,10 @@ for power2 = powerLib
         cfg{n}.do_sta = false;
         
         % do
-        cfg{n}.do_timelockLFP = false;
-        cfg{n}.do_timelockMUAX = false;
+        cfg{n}.do_timelockLFP = true;
+        cfg{n}.do_timelockMUAX = true;
         cfg{n}.do_trialPSTH = true;
-        cfg{n}.do_lfpPower = false;
+        cfg{n}.do_lfpPower = true;
         cfg{n}.do_lfpPower2 = power2;
         cfg{n}.do_stSpec = false;
         cfg{n}.do_stSpecPerTrial = false;
