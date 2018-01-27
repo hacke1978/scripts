@@ -20,12 +20,13 @@ if strcmp(allCfg.name, 'Hermes')
     screenSize = [1680 1050];
     fixPoint = screenSize/2;
     caccept = ones(64, 1); caccept(7) = 0; caccept(33) = 0;
+%     caccept = strncmp([allFiles(1).RFs.label], 'V1', 10);
     if strcmp(allCfg.type, 'grating-ori')
         stimCenter = round(fixPoint+(51*[2 5]));
     elseif strcmp(filename, 'hermes_20171201_fixation-naturalim_90')
-        stimCenter = round(fixPoint+(degDistances(1)*[2 6]));
+        stimCenter = round(fixPoint+(degDistances(1, allCfg.name)*[2 6]));
     else
-        stimCenter = round(fixPoint+(degDistances(1)*[2 3]));
+        stimCenter = round(fixPoint+(degDistances(1, allCfg.name)*[2 3]));
     end
     for ii=1:64
         RFs(ii).centerposy = screenSize(2) - RFs(ii).centerposy;
@@ -55,7 +56,14 @@ if strcmp(allCfg.name, 'Hermes')
     if strcmp(allCfg.type, 'grating-ori')
         fname = fullfile(dataDir, sprintf('grating-ori'))
     else
-        fname = fullfile(dataDir, sprintf('stimset%02d', str2num(tok{end})))
+        if isempty(str2num(tok{end}))
+            sesNo = str2num(tok{end}(1:end-1));
+        else
+            sesNo = str2num(tok{end});
+        end
+        fname = fullfile(dataDir, sprintf('stimset%02d', sesNo))
+%         load('/mnt/v7k/projects/MWNaturalPredict/StimuliCondInfo/hermes_20171113_fixation-color-masksize_78_condInfo.mat');
+%         imList = fullfile(fname, condInfo.imName);
         imList = getImListForSession(allCfg, fname);
         [allFiles.imName] = deal(imList{:});
     end
@@ -137,7 +145,7 @@ plotPatchFromIm(allCfg, allFiles);
 out = [];
 out.allFiles = allFiles;
 out.allCfg = allCfg;
-if allCfg.isCorr
-    rates = getRatesAndStats(allCfg, allFiles);
-    plotCorrelations(allCfg, rates);
-end
+% if allCfg.isCorr
+%     rates = getRatesAndStats(allCfg, allFiles);
+%     plotCorrelations(allCfg, rates);
+% end

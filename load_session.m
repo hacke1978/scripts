@@ -23,7 +23,7 @@ allCfg.path_powerBaseline = ~isempty(path_powerBaseline);
 allCfg.path_stSpecBaseline = ~isempty(path_stSpecBaseline);
 
 % prepare the config
-allCfg.path_lfpPower_Second = ~isempty(path_lfpPower_Second) && allCfg.do_lfpPower_Second;
+allCfg.path_lfpPower_Second = ~isempty(path_lfpPower_Second) && allCfg.do_lfpPower;
 allCfg.path_lfpPower = ~isempty(path_lfpPower) && allCfg.do_lfpPower;
 allCfg.path_lfpPower2 = ~isempty(path_lfpPower2) && allCfg.do_lfpPower2;
 allCfg.path_lfpPowerVar = ~isempty(path_lfpPowerVar) && allCfg.withErrorBars;

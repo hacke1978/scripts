@@ -1,4 +1,4 @@
-function plot_all(allCfg, allFiles)
+function plot_all(allCfg, allFiles, varargin)
 % Plot the analysis results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Author: Cem Uran
@@ -15,6 +15,9 @@ elseif strcmp(allCfg.name, 'Ares')
     layout = vertcat([NaN, NaN, 27, 1, NaN, NaN],[reshape(17:26, 5, 2) [28:32]' reshape(2:16, 5, 3)]);
 end
 
+if nargin > 2
+    overlayFiles = varargin{1};
+end
 % Start the figure
 fileList = fieldnames(allFiles);
 
@@ -22,7 +25,11 @@ for fl = 1:length(fileList)
     thisFile = fileList{fl};
     if strcmp(thisFile, 'lfpPower')
         fprintf('plotting %s \n', thisFile)
-        plotLFPpower(allCfg, allFiles, thisFile, layout)
+        if allCfg.isOverlay
+            plotLFPpower(allCfg, allFiles, thisFile, layout, overlayFiles)
+        else
+            plotLFPpower(allCfg, allFiles, thisFile, layout)
+        end
         if (strcmp(thisFile, 'lfpPower') && allCfg.onIm && strcmp(allCfg.layout, 'channels'))
             plotOnIm(allCfg, allFiles, thisFile)
         end
@@ -35,7 +42,11 @@ for fl = 1:length(fileList)
             strcmp(thisFile, 'trialPSTH') || ...
             strcmp(thisFile, 'stSpec')
         fprintf('plotting %s \n', thisFile)
-        plot_single(allCfg, allFiles, thisFile, layout);
+        if allCfg.isOverlay
+            plot_single(allCfg, allFiles, thisFile, layout, overlayFiles);
+        else
+            plot_single(allCfg, allFiles, thisFile, layout);
+        end
         if (strcmp(thisFile, 'stSpec') && ~allCfg.onIm)
             %             plotOnIm(allCfg, allFiles, thisFile)
         end

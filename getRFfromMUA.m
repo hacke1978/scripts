@@ -3,18 +3,21 @@ function getRFfromMUA(cfg)
 screenSize = [1680 1050];
 fixPoint = screenSize/2;
 binSize = cfg.binSize;
-edges = 0:binSize:3.1-binSize;
+edges = 0:binSize:3.8-binSize;
 filename = cfg.filename;
 savename = cfg.savename;
 orient = cfg.orient;
-rfDir = dir(fullfile(filename, '*chopped.muat'));
-load(fullfile(filename, rfDir.name), '-mat');
-taccept = data.trialinfo(:, 2)==0;  % get correct trials
+pixelPerDeg = cfg.pxd;
+rfDir = dir(fullfile(filename, sprintf('*%s_chopped.muat',cfg.tag)));
+load(fullfile(filename, rfDir(end).name), '-mat');
+% taccept = data.trialinfo(:, 2)==0;  % get correct trials
+taccept = data.trialinfo(:, 2);  % get correct trials
 caccept = cfg.caccept;
 Cond = data.trialinfo(:, 3); % get all conditions
 muat.data = data; clear data;
 libCond = unique(Cond);
 nCond = length(unique(Cond));
+cfg.edges = edges;
 assert(nCond == length(orient), 'nCond does not match orientations')
 for ch=(caccept) % For each channel
     allDev = []; GPSTH = {};
@@ -23,13 +26,14 @@ for ch=(caccept) % For each channel
         % Get all trials for a condition
         trialsChosen = find(Cond==cnd & taccept==1);
         % Get the MUA
-        cfg = [];
-        cfg.edges = edges;
+        %         cfg = [];
+        %         cfg.edges = edges;
+        %         cfg.orient = orient;
         % z-score
         [tmpGPSTH, devGPSTH] = getGPSTHfromMUA(cfg, muat.data, ch, trialsChosen);
         GPSTH{cnd} = zscore(tmpGPSTH); allDev = [allDev; devGPSTH];
     end
-    [gMap, gLatency] = getResponseLatency(GPSTH, edges(1:end-1));
+    [gMap, gLatency] = getResponseLatency(cfg, GPSTH, edges(1:end-1));
     rfMap = imresize(gMap, [norm(screenSize) norm(screenSize)]);
     mapSize = size(rfMap);
     cropSize = [mapSize/2-screenSize/2+1  mapSize/2+screenSize/2];
@@ -38,6 +42,7 @@ for ch=(caccept) % For each channel
     % fit gaussian
     GPSTH = vertcat(GPSTH{:});
     sh = figure; set(sh, 'Visible', 'off');
+    allFano = [];
     for ii = 1:size(GPSTH, 1)
         d = zscore(GPSTH(ii, :));
         %         d(abs(d)<2) = 0;
@@ -48,7 +53,7 @@ for ch=(caccept) % For each channel
         options.startPoint = [d(ind) x(ind) 0.005];
         options.Lower = [1 0.25  5/size(d,2)];
         options.Upper = [10 0.75 100/size(d,2)];
-                options.Robust = 'Off';
+        options.Robust = 'Off';
         dSmooth = d-mean(d);
         gaussFit{ii} = fit(x', dSmooth', 'gauss1', options);
         fitDist{ii} = gaussFit{ii}.a1*exp(-((x-gaussFit{ii}.b1)/gaussFit{ii}.c1).^2)...
@@ -69,17 +74,22 @@ for ch=(caccept) % For each channel
         plot(x, fitDist{ii}); hold on;
         plot( xCutOff{ii},gaussFit{ii}.a1*exp(-((xCutOff{ii}-gaussFit{ii}.b1)/gaussFit{ii}.c1).^2)...
             +mean(d), 'r.'); hold on;
-        plot( xPeak{ii} ,yPeak{ii} , 'r.'); hold on;
+        plot( xPeak{ii}, yPeak{ii} , 'r.'); hold on;
         plot(x(ind), d(ind), 'g');
-        [mVal, mInd] = max(GPSTH(:, 40:end-40), [], 2);
-        mInd = mInd + 40; mInt = round(mInd-degDistances(1)/8+1:mInd+degDistances(1)/8);
-%         mInt = true(size(allDev, 2));
-        fanoWindow = allDev(:, mInt);
-        fano = abs(mean(fanoWindow.^2./GPSTH(:, mInt), 2));
-%         fano = abs(mean(allDev/GPSTH, 2));
-%         fano = abs(diag(allDev(:, mInd)).^2./mVal);
-        title(sprintf('%.2f, %.2f, %.2f, %.2f', ...
-            mean(allDev(ii, :)), max(GPSTH(ii,:)), mean(allDev(ii, :))/max(GPSTH(ii,:)), fano(ii) ));
+        [mVal, mInd] = max(d(:, 40:end-40), [], 2);
+        mInd = mInd + 40;
+        indSignal = round(mInd-pixelPerDeg/2+1:mInd+pixelPerDeg/2);
+        indNoise = ones(size(d)); indNoise(indSignal) = [];
+        indNoise(1:40) = []; indNoise(end-39:end) = [];
+        fano = abs(mean(d(indSignal))-mean(d(indNoise)))/mean(allDev(ii, :));
+        allFano = [allFano; fano];
+        %         mInt = true(size(allDev, 2));
+        %         fanoWindow = allDev(:, mInt);
+        %         fano = abs(mean(fanoWindow.^2./GPSTH(:, mInt), 2));
+        %         fano = abs(mean(allDev/GPSTH, 2));
+        %         fano = abs(diag(allDev(:, mInd)).^2./mVal);
+        title(sprintf('%.2f, %.2f, %.2f, %.2f, %.2f', ...
+            gLatency, mean(allDev(ii, :)), max(GPSTH(ii,:)), mean(allDev(ii, :))/max(GPSTH(ii,:)), fano));
     end
     print(strcat(savename,'_RFPSTHFit.png'), '-dpng', '-r300')
     close; h = figure; set(h, 'visible', 'off');
@@ -87,11 +97,11 @@ for ch=(caccept) % For each channel
     print(strcat(savename, '_RFEllipseFit.png'), '-dpng', '-r300');
     close;
     %% RF Criteria which is yet to be tested
-    todel = mean(allDev, 2)/max(GPSTH, [], 2) > .3;
-    if ~( mean(allDev(:)) < 0.95 && mean(max(GPSTH, [], 2)) > 3 & sum(todel)>4)
+    %     todel = mean(allDev, 2)./max(GPSTH, [], 2) > .3; %&& sum(todel)<8
+    if ~( mean(allDev(:)) < 0.95 && mean(max(GPSTH, [], 2)) > 3 )
         continue
     end
-%     todel = abs(zscore(fano))>1.98;
+    todel = allFano<1.98;
     allPeak = ((vertcat(yPeak{:})));
     allCenter = (vertcat(xPeak{:})-0.5)*norm(screenSize);
     allCut = (horzcat(xSTD{:})')*norm(screenSize);
@@ -148,8 +158,8 @@ for ch=(caccept) % For each channel
         disp('center from 2dmap')
     end
     
-    %     z = zscore(allCut,1);
-    %     todel = todel | (any(abs(z)>1.98, 2)) ;
+    z = zscore(allCut,1);
+    todel = todel | (any(abs(z)>1.98, 2)) ;
     %      % Find ellipse points
     
     allCut(:,1) = allCut(:,1);
@@ -191,8 +201,8 @@ for ch=(caccept) % For each channel
     hold on, plot(cx1,cy1,'k.'), hold on, plot(x1,y1,'r.'), hold on, plot(cx2,cy2,'k.');
     
     try
-%         [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'trace');
-    [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'bookstein');
+        %         [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'trace');
+        [z, a, b, phi] = fitellipse([cx1 cx2;cy1 cy2], 'constraint', 'bookstein');
     catch
         [a, b, x0, y0, phi] = ellipse_fit([cx1(:) cx2(:)], [cy1(:) cy2(:)]);
         z = zeros(2,1);
@@ -217,14 +227,15 @@ end
 end
 
 
-function [gMap, gLatency] = getResponseLatency(psth, edges)
+function [gMap, gLatency] = getResponseLatency(cfg, psth, edges)
 % look for the response latency in 40-80ms with 1ms resolution
 
-orient = 0:22.5:360-22.5;
-respLatency = 0.04:0.001:0.08;
-stimDuration = 3;
+orient = cfg.orient; %0:22.5:360-22.5;
+respLatency = 0.04:cfg.binSize:0.08;
+% respLatency = 0.065;
+stimDuration = 3.3;
 thisPSTH = vertcat(psth{:});
-thisPSTH = [thisPSTH(9:end, :); thisPSTH(1:8, :)];
+thisPSTH = [thisPSTH((length(orient)/2+1:end), :); thisPSTH(1:length(orient)/2, :)];
 allMap = []; allMax = [];
 for rind =1:length(respLatency)
     rDel = respLatency(rind);
@@ -250,7 +261,7 @@ allMUA = zeros(length(trialsChosen), length(edges));
 for ii=1:numel(trialsChosen)
     allMUA(ii, :) = hist(MUA.trial{ch, trialsChosen(ii)}, edges);
 end
-sigma = 2.5;
+sigma = 3;
 cutoff = ceil(3*sigma);
 GaussianK = fspecial('gaussian',[1,2*cutoff+1],sigma); % 1D filter
 % GPSTH = zscore(conv(mean(allMUA(:, 1:end-1)),GaussianK,'same'));

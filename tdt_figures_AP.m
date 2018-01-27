@@ -30,7 +30,6 @@ if catCfg(1).isGroup
     plot_all(poolCfg, poolFiles);
     plotPatchFromIm(poolCfg, poolFiles);
 
-
 if catCfg(1).isCorr
     % plot group stuff
     corrCfg = [];
@@ -41,5 +40,15 @@ if catCfg(1).isCorr
     corrCfg.isOri = false;
     plotCorrelations(corrCfg, out);
 end
+
+if allCfg.isOverlay
+    allCfg = out{1}.allCfg;
+    allFiles = out{1}.allFiles;
+    
+    overlayCfg = out{2}.allCfg;
+    overlayFiles = out{2}.allFiles;
+   plot_all(allCfg, allFiles, overlayFiles)
+end
+
 
 end

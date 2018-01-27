@@ -1,10 +1,26 @@
-function plot_single(allCfg, allFiles, thisFile, layout)
+function plot_single(allCfg, allFiles, thisFile, layout, varargin)
 % plot stuff on the image
 % should i deally will be plotting automatically
 savefile = allCfg.outputfile;
 allThis = squeeze(cat(3, allFiles.(thisFile)));
 caccept = allFiles(1).caccept;
 shaded = 0;
+
+if nargin > 4
+    overlayFiles = varargin{1};
+    overlayThis = cat(2, overlayFiles.(thisFile));
+    minLength = 9999;
+    for ii=1:length(overlayThis)
+        if length(overlayThis(ii).time) < minLength
+            minLength = length(overlayThis(ii).time);
+        end
+    end
+    overlayData = [];
+    for ii=1:length(overlayThis)
+    overlayData = cat(3, overlayData, overlayThis(ii).avg(:, 1:minLength));
+    end
+    overlayT = overlayThis(ii).time(:, 1:minLength);
+end
 
 if strcmp(thisFile, 'muaxCoherence')
     tlabel = allThis(1).labelcmb;
@@ -41,7 +57,6 @@ elseif strcmp(thisFile, 'stSpec')
             end
         end
         shaded = 1;
-        
     end
     %     txlim = [min(tx) max(tx)];
     txlim = [10 max(tx)];
@@ -142,9 +157,8 @@ if strcmp(allCfg.layout, 'channels')
                     nind = find(ismember(cellfun(@(x) str2num(x), tlabel), neighbors));
                     data = allThis(ch, cnd);
                     data = cat(3, data.ppc1);
-                    data_var = stsVar(:, :, cnd, ch);
-                    
                     if shaded
+                                            data_var = stsVar(:, :, cnd, ch);
                         %                         for ii=nind'
                         %                         shadedErrorBar(tx, data(ii, :), data_var(ii, :)); hold on;
                         %                         end
@@ -244,9 +258,10 @@ else
                 data = allThis(ch, cnd);
                 datalim = cat(3, allThis(ch, :).ppc1);
                 data = cat(3, data.ppc1);
-                data_var = stsVar(:, :, cnd, ch);
-                datalim_var = stsVar(:, :, :, ch);
                 if shaded
+                    data_var = stsVar(:, :, cnd, ch);
+                datalim_var = stsVar(:, :, :, ch);
+                
                     %                     for ii=nind'
                     %                         shadedErrorBar(tx, data(ii, :), data_var(ii, :)); hold on;
                     %                     end
@@ -280,6 +295,9 @@ else
                     end
                 else
                     plot(tx, data(ch, :, cnd), 'r'); hold on;
+                    if allCfg.isOverlay
+                        plot(overlayT, overlayData(ch, :, cnd), 'Color', [0 0 0.5], 'LineWidth', 0.5); hold on;
+                    end
                     if allCfg.normalize
                         ylim([min(min(data(ch, :, :))) max(max(data(ch, :, :)))]);
                     else
@@ -291,12 +309,14 @@ else
             xlim(txlim);
             %             title(sprintf('cond%02d', cnd),'FontSize',5 , 'FontWeight', 'bold');
             %             title(sprintf('sf-%.2f, ori-%.2f', sfreq{cnd}, sori{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
-            if mod(ndLib(cnd), nc)==1
-                title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
-            elseif ceil(ndLib(cnd)/nc)==1
-                title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
-            elseif allCfg.normalize
-                set(gca, 'XTick', []); set(gca, 'YTick', []);
+            if strcmp(allCfg.type, 'grating-ori')
+                if mod(ndLib(cnd), nc)==1
+                    title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
+                elseif ceil(ndLib(cnd)/nc)==1
+                    title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 5);
+                elseif allCfg.normalize
+                    set(gca, 'XTick', []); set(gca, 'YTick', []);
+                end
             end
             set(gca,'FontSize',5)
         end
@@ -305,7 +325,10 @@ else
             for rr=1:nr-1
                 subplot(nr, nc, rr*nc)
                 cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(rr, 1:nc-1)), 'UniformOutput', false);
-                plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r');
+                plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r'); hold on;
+                if allCfg.isOverlay
+                   plot(overlayT, mean(overlayData(ch, :, [cind{:}]), 3), 'Color', [0 0 0.5], 'LineWidth', 0.5); hold on;
+                end
                 xlim(txlim);
                 set(gca,'FontSize',5)
                 if allCfg.normalize
@@ -317,7 +340,10 @@ else
             for cc=1:nc-1
                 subplot(nr, nc, nc*(nr-1)+cc)
                 cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(1:nr-1, cc)), 'UniformOutput', false);
-                plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r');
+                plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r'); hold on;
+                if allCfg.isOverlay
+                   plot(overlayT, mean(overlayData(ch, :, [cind{:}]), 3), 'Color', [0 0 0.5]); hold on;
+                end
                 xlim(txlim);
                 set(gca,'FontSize',5)
                 if allCfg.normalize

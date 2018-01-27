@@ -1,9 +1,18 @@
-function plotLFPpower(allCfg, allFiles, thisFile, layout)
+function plotLFPpower(allCfg, allFiles, thisFile, layout, varargin)
 % plots LFP Power in various forms
 addpath('/mnt/v7k/home/uranc/workspace/Source/export_fig/')
 savename = allCfg.outputfile;
 % flatten data
 powerLFP = cat(2, allFiles.(thisFile));
+
+if nargin > 4
+    overlayFiles = varargin{1};
+    overlayLFP = cat(2, overlayFiles.(thisFile));
+    overlayData = cat(3, overlayLFP.powspctrm);
+    overlayBaseline = cat(2, overlayFiles.powerBaseline); % DONT FORGET
+    overlayBase = cat(3, overlayBaseline.powspctrm);
+    overlayBaseline = overlayBase(:, :, 1);
+end
 
 nCond = length(powerLFP);
 xLab = powerLFP.freq;
@@ -75,11 +84,11 @@ if strcmp(allCfg.layout, 'channels')
         h3 = figure; if allCfg.print; set(h3, 'Visible', 'off'); end;
         %         if allCfg.onIm; him = figure; if allCfg.print; set(him, 'visible', 'off'); end; end;
         for ch=1:nChan
-            if strcmp(allCfg.name, 'isis')
+            if strcmp(allCfg.name, 'Isis')
                 chn = str2num(yLab{ch}(7:end));
-            elseif strcmp(allCfg.name, 'ares')
+            elseif strcmp(allCfg.name, 'Ares')
                 chn = str2num(yLab{ch}(7:end));
-            elseif strcmp(allCfg.name, 'hermes')
+            elseif strcmp(allCfg.name, 'Hermes')
                 chn = str2num(yLab{ch}(4:end));
                 if isempty(chn)
                     chn = 127;
@@ -92,8 +101,8 @@ if strcmp(allCfg.layout, 'channels')
             %raw plot
             figure(h1); if allCfg.print; set(h1, 'Visible', 'off'); end;
             subplot(nr, nc, nd);
-            plot(xLab, data(ch, :, cnd), 'r'); hold on;
             plot(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5]);
+            plot(xLab, data(ch, :, cnd), 'r'); hold on;
             title({chn}, 'FontWeight', 'bold', 'FontSize', 5);
             ylim([min([data(ch, :, cnd) baseline(ch, :)]) max([data(ch, :, cnd) baseline(ch, :)])]);
             xlim([10 120]); %ylim([-0.5 1.2]);
@@ -228,6 +237,9 @@ elseif strcmp(allCfg.layout, 'stimuli')
             figure(h1); if allCfg.print; set(h1, 'Visible', 'off'); end;
             subplot(nr, nc, nd)
             %             plot(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5]); hold on;
+            if allCfg.isOverlay
+                plot(xLab, overlayBaseline(ch, :), 'Color', [0 0 0.5]); hold on;
+            end
             loglog(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5]); hold on;
             if strcmp(allCfg.type, 'NatImSEQ')
                 if nd<nCond/2
@@ -239,17 +251,21 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 end
             else
                 %                 plot(xLab, data(ch, :, cnd), 'r'); hold on;
+                if allCfg.isOverlay
+                    plot(xLab, overlayData(ch, :, cnd), 'b'); hold on;
+                end
                 loglog(xLab, data(ch, :, cnd), 'r'); hold on;
             end
             xlim([10 120]);
             %             ylim([min([data(ch, :, cnd) baseline(ch, :)]) max([data(ch, :, cnd) baseline(ch, :)])]);
-            
-            if mod(ndLib(cnd), nc)==1
-                title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
-            elseif ceil(ndLib(cnd)/nc)==1
-                title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
-            elseif allCfg.normalize
-                set(gca, 'XTick', []); set(gca, 'YTick', []);
+            if strcmp(allCfg.type, 'grating-ori')
+                if mod(ndLib(cnd), nc)==1
+                    title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
+                elseif ceil(ndLib(cnd)/nc)==1
+                    title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
+                elseif allCfg.normalize
+                    set(gca, 'XTick', []); set(gca, 'YTick', []);
+                end
             end
             set(gca,'FontSize', 3)
             % normalized to baseline
@@ -269,16 +285,21 @@ elseif strcmp(allCfg.layout, 'stimuli')
                         plot(xLab, log10(data_Second(ch, :, cnd)./(1e-20+baseline(ch, :))), 'k'); hold on;
                     end
                 else
+                    if allCfg.isOverlay
+                        plot(xLab, log10(overlayData(ch, :, cnd)./(1e-20+overlayBase(ch, :))), 'b'); hold on;
+                    end
                     plot(xLab, log10(data(ch, :, cnd)./(1e-20+baseline(ch, :))), 'r'); hold on;
                 end
             end
             %             title(sprintf('cond%02d', cnd), 'FontWeight', 'bold', 'FontSize', 5);
-            if mod(ndLib(cnd), nc)==1
-                title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
-            elseif ceil(ndLib(cnd)/nc)==1
-                title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
-            elseif allCfg.normalize
-                set(gca, 'XTick', []); set(gca, 'YTick', []);
+            if strcmp(allCfg.type, 'grating-ori')
+                if mod(ndLib(cnd), nc)==1
+                    title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
+                elseif ceil(ndLib(cnd)/nc)==1
+                    title(sprintf('%d', sori{cnd}), 'FontWeight', 'bold', 'FontSize', 3);
+                elseif allCfg.normalize
+                    set(gca, 'XTick', []); set(gca, 'YTick', []);
+                end
             end
             xlim([10 120]);
             set(gca,'FontSize', 3)
@@ -328,7 +349,9 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 plot(xLab, mean(squeeze(log10(data(ch, :, :)./repmat(1e-20+baseline(ch, :), 1, 1, nCond))), 2), '--', 'Color', [0.5 0.5 0.5]); hold on;
                 cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(rr, 1:nc-1)), 'UniformOutput', false);
                 plot(xLab, log10(mean(data(ch, :, [cind{:}]), 3)./(1e-20+baseline(ch, :))), 'r'); hold on;
-                
+                if allCfg.isOverlay
+                    plot(xLab, log10(mean(overlayData(ch, :, [cind{:}]), 3)./(1e-20+overlayBase(ch, :))), 'b'); hold on;
+                end
                 xlim([10 120]); %ylim([-0.2 1]);
                 set(gca, 'XTick', []); set(gca, 'YTick', []);
                 set(gca,'FontSize', 3)
@@ -347,6 +370,9 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 plot(xLab, mean(squeeze(log10(data(ch, :, :)./repmat(1e-20+baseline(ch, :), 1, 1, nCond))), 2), '--', 'Color', [0.5 0.5 0.5]); hold on;
                 cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(1:nr-1, cc)), 'UniformOutput', false);
                 plot(xLab, log10(mean(data(ch, :, [cind{:}]), 3)./(1e-20+baseline(ch, :))), 'r'); hold on;
+                if allCfg.isOverlay
+                    plot(xLab, log10(mean(overlayData(ch, :, [cind{:}]), 3)./(1e-20+overlayBase(ch, :))), 'b'); hold on;
+                end
                 xlim([10 120]); %ylim([-0.2 1]);
                 set(gca, 'XTick', []); set(gca, 'YTick', []);
                 set(gca,'FontSize', 3)

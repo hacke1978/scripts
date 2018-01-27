@@ -22,7 +22,7 @@ nChannels = length(files);
 data = [];
 data.trial = {zeros(nChannels, nSamples)};
 data.trial{1}(1,:) = firstFile.data;
-data.time = {(0:nSamples-1)/firstFile.fsample};
+data.time = {(1:nSamples)/firstFile.fsample};
 data.fsample = firstFile.fsample;
 data.cfg = firstFile.cfg;
 data.sampleinfo = [1 nSamples];
@@ -34,7 +34,8 @@ if any(firstFile.header.channelNum) %not zero as in Atos
 else
     [~,fname,~]=fileparts(files{1});
     tok = strsplit(fname, '_');
-    data.label{1} = sprintf('%s-%s', firstFile.datatype, tok{end});
+    chn = tok{end};
+    data.label{1} = sprintf('%s-%s', firstFile.datatype, chn(3:end));
 end
 
 clear firstFile

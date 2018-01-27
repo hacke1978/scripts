@@ -147,9 +147,9 @@ elseif strcmp(allCfg.corrLayout, 'overall')
     [rs, ps] = corr([out.stats]', [out.peaks]', 'type', 'Spearman');
     h = figure(); if allCfg.print; set(h, 'visible', 'off'); end;
     plot(allStats, allPeaks, '.');% ylim([-2 20]);
-    if strcmp(allCfg.name, 'hermes')
+    if strcmp(allCfg.name, 'Hermes')
         title(sprintf('p<0.05 #%d/63, Spearman R %.2f, pVal %.d ',peakCount, rs, ps))
-    elseif strcmp(allCfg.name, 'isis')
+    elseif strcmp(allCfg.name, 'Isis')
         title(sprintf('p<0.05 #%d/22, Spearman R %.2f, pVal %.d ',peakCount, rs, ps))
     end
     figname = sprintf('allChannels_peakCorrelations.png');
@@ -159,9 +159,9 @@ elseif strcmp(allCfg.corrLayout, 'overall')
     [rs, ps] = corr([out.stats]', [out.rates]', 'type', 'Spearman');
     h = figure(); if allCfg.print; set(h, 'visible', 'off'); end;
     plot(allStats, allRates, '.');% ylim([-2 20]);
-    if strcmp(allCfg.name, 'hermes')
+    if strcmp(allCfg.name, 'Hermes')
         title(sprintf('p<0.05 #%d/63, Spearman R %.2f, pVal %.d ',rateCount, rs, ps))
-    elseif strcmp(allCfg.name, 'isis')
+    elseif strcmp(allCfg.name, 'Isis')
         title(sprintf('p<0.05 #%d/22, Spearman R %.2f, pVal %.d ',rateCount, rs, ps))
     end
     figname = sprintf('allChannels_rateCorrelations.png');

@@ -16,10 +16,10 @@ if isfield(allFiles(1), 'sortInd'), sortInd = allFiles(1).sortInd; else sortInd 
 if strcmp(allCfg.name, 'Hermes')
     layout = reshape(64:127, 8, 8);
     if strcmp(allCfg.type, 'grating-ori')
-        stimCenter = round(fixPoint+51*([2 5]));
+        stimCenter = round(fixPoint+degDistances(1, allCfg.name)*([2 5]));
     else
-%         stimCenter = round(fixPoint+degDistances(1)*([2 3]));
-                  stimCenter = round(fixPoint+degDistances(1)*([2 6.5]));
+        %         stimCenter = round(fixPoint+degDistances(1)*([2 3]));
+        stimCenter = round(fixPoint+degDistances(1, allCfg.name)*([2 6.5]));
     end
     label = [RFs.label];
     label = cellfun(@(x) str2num(x(4:end)), label);
@@ -88,10 +88,10 @@ elseif strcmp(allCfg.layout, 'stimuli')
         fullScreen = 128*ones(screenSize(2), screenSize(1), size(im, 3));
         [im, ~, alphaMask] = imread(allFiles(cnd).imName);
         imSize = size(im);
-        im(repmat(alphaMask, [1 1 3]) == 0) = 128;
         if size(im, 3) == 1
             im = repmat(im, 1, 1, 3);
         end
+        im(repmat(alphaMask, [1 1 3]) == 0) = 128;
         fullScreen(stimCenter(2)-imSize(2)/2+1:stimCenter(2)+imSize(2)/2, ...
             stimCenter(1)-imSize(1)/2+1:stimCenter(1)+imSize(1)/2, :) = im;
         for ch = 1:nChan

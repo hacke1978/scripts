@@ -13,11 +13,11 @@ im = imread(imDir);
 % Parameters
 orientation = [0:11.25:179];
 
-if strcmp(allCfg.name, 'hermes')
+if strcmp(allCfg.name, 'Hermes')
     pixPerDeg = 51;
-elseif strcmp(allCfg.name, 'isis')
+elseif strcmp(allCfg.name, 'Isis')
     pixPerDeg = 40;
-elseif strcmp(allCfg.name, 'ares')
+elseif strcmp(allCfg.name, 'Ares')
     pixPerDeg = 40;
 end
 freq = [.5:.5:3]/pixPerDeg; % cycles per pixels

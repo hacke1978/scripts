@@ -7,15 +7,22 @@ clear all; close all; userpath('clear'); userpath('reset');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 batchTag = '';
 sesType = 'rfmapping-bar'; % 'NatImSEQ' 'grating-ori' 'rfmapping-bar'
-monkeyName = 'Ares'; % 'Hermes' 'Isis'
+monkeyName = 'Hermes'; % 'Hermes' 'Isis'
 dirMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict', monkeyName, sesType);
 saveMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis', sesType, monkeyName);
 % addpath('/mnt/hpx/slurm/uranc/fieldtrip/');
 
-sessionList = {...
-    'ares026a04'...
-    };
-
+% sessionList = {...
+% %   'ares014a04',...
+%   'ares026a04',...
+%   'ares030a03',...
+% %     };
+% sessionList = {
+%     'hermes_20170808_rfmapping-bar_1'
+% };
+sessionList = {
+    'hermes_20180110_rfmapping-bar_3',...
+    'hermes_20180110_rfmapping-bar_4'};
 saveMonkey = fullfile(saveMonkey, sessionList);
 dirMonkey = fullfile(dirMonkey, sessionList);
 

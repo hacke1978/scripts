@@ -6,7 +6,7 @@ stimSetAll = '/mnt/v7k/home/uranc/workspace/VinckLab/Dataset/Processed/_6flickr/
 load(fullfile(stimSetAll, 'imSetHighSinger.mat'));
 load(fullfile(stimSetAll, 'imSetLowSinger.mat'));
 allStats = horzcat(highStats, lowStats);
-if strcmp(allCfg.name, 'hermes')
+if strcmp(allCfg.name, 'Hermes')
     load(fullfile(statDir, 'allChSSIM_hermes.mat'));
 %     load(fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/RFmaps/', sprintf('GRFs_Fit_%02d.mat', 64)));
     RFs = allFiles(1).RFs;
@@ -20,7 +20,7 @@ if strcmp(allCfg.name, 'hermes')
         % get im ori
         load(fullfile(statDir, sprintf('allOri_%s.mat', allCfg.name)))
     end
-elseif strcmp(allCfg.name, 'isis')
+elseif strcmp(allCfg.name, 'Isis')
     load(fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/RFmaps/', sprintf('GRFs_Fit_v1.mat')))
     load(fullfile(statDir, 'allChSSIM_isis.mat'));
     caccept = ~ismember(1:32, [9 13 14 16 22 23 24 26 31 32]);

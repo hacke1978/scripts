@@ -140,9 +140,16 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         cfg.tapsmofrq = 7;
         
         lfpPower = ft_freqanalysis(cfg, lfpSel);
-        fname = sprintf('%slfpPower.mat', fbase);
-        ESIsave(fullfile(savefile, fname), 'lfpPower');
-        clear lfpPower
+        if ~allCfg.flagSecond
+            fname = sprintf('%slfpPower.mat', fbase);
+            ESIsave(fullfile(savefile, fname), 'lfpPower');
+            clear lfpPower
+        else
+            lfpPower_Second = lfpPower;
+            fname = sprintf('%slfpPower_Second.mat', fbase);
+            ESIsave(fullfile(savefile, fname), 'lfpPower_Second');
+            clear lfpPower_Second
+        end
         
         if allCfg.runErrorBars
             % Get event
@@ -165,9 +172,14 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
                 cfg.trials = ~ismember(trialsChosen, trialsChosen(tr));
                 lfpPowerVar(tr) = ft_freqanalysis(cfg, lfpSel);
             end
-            
-            fname = sprintf('%slfpPowerVar.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'lfpPowerVar');
+            if ~allCfg.flagSecond
+                fname = sprintf('%slfpPowerVar.mat', fbase);
+                ESIsave(fullfile(savefile, fname), 'lfpPowerVar');
+            else
+                lfpPowerVar_Second = lfpPowerVar;
+                fname = sprintf('%slfpPowerVar_Second.mat', fbase);
+                ESIsave(fullfile(savefile, fname), 'lfpPowerVar_Second');
+            end
             clear TFRmultEvent
         end
     end
@@ -203,20 +215,21 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         cfg.trials = trialsClean(trialsChosen);
         cfg.toilim = allCfg.timeSustained;
         spikeSel = ft_spike_select(cfg, spikeClean);
-        trl = unique([spikeSel.trial{:}]);
-        spike.trialtime = repmat(allCfg.timeSustained, length(trl), 1);
-        for ch = 1:nChan
-            for tr = 1:length(trl)
-                spikeSel.trial{ch}(spikeSel.trial{ch}==trl(tr)) = tr;
-            end
-        end
-        spikeSel.label = strcat('label ',spikeSel.label);
-        lfpSel.cfg.trl = repmat(allCfg.timeSustained, length(trl), 1);
-        spikeSel.timestamp = spikeSel.time;
+                trl = unique([spikeSel.trial{:}]);
+                spike.trialtime = repmat(allCfg.timeSustained, length(trl), 1);
+                for ch = 1:nChan
+                    for tr = 1:length(trl)
+                        spikeSel.trial{ch}(spikeSel.trial{ch}==trl(tr)) = tr;
+                    end
+                end
+                spikeSel.label = strcat('label ',spikeSel.label);
+                lfpSel.cfg.trl = repmat(allCfg.timeSustained, length(trl), 1);
+                spikeSel.timestamp = spikeSel.time;
         
         % Then do it
         cfg = [];
-        cfg.method = 'mtmconvol';
+        %         cfg.method = 'mtmconvol';
+        cfg.method = 'mtmfft';
         cfg.foi    = 2:2:120;
         cfg.t_ftimwin = 7./cfg.foi; % watch out that the first frequency is not too long duration, so have to set to a minimum value
         twin = allCfg.timeSustained(2)-allCfg.timeSustained(1);
@@ -231,27 +244,34 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
             cfg.spikechannel = k;
             stSpec(k) = ft_spiketriggeredspectrum_stat(cfg, sts);
         end
-        %         if ~allCfg.flagSecond
-        fname = sprintf('%s_stSpec.mat', fbase);
-        %         else
-        %             fname = sprintf('%s_stSpec_Second.mat', fbase);
-        %         end
-        ESIsave(fullfile(savefile, fname), 'stSpec');
+        if ~allCfg.flagSecond
+            fname = sprintf('%sstSpec.mat', fbase);
+            ESIsave(fullfile(savefile, fname), 'stSpec');
+        else
+            stSpec_Second = stSpec;
+            fname = sprintf('%sstSpec_Second.mat', fbase);
+            ESIsave(fullfile(savefile, fname), 'stSpec_Second');
+        end
+        
         clear stSpec
         
-        if allCfg.runErrorBars
-            for k = 1:nChan
-                for rind = 1:sts.trial{k}(end)
-                    cfg.spikechannel = k;
-                    %         cfg.feedback = 'no';
-                    cfg.trials = ~ismember([1:sts.trial{k}(end)],rind);
-                    stSpecPerTrial(k, rind) = ft_spiketriggeredspectrum_stat(cfg, sts);
-                end
-            end
-            fname = sprintf('cond%02d_stSpecPerTrial.mat', cnd);
-            ESIsave(fullfile(savefile, fname), 'stSpecPerTrial');
-            clear stSpecPerTrial
-        end
+% %         if allCfg.runErrorBars
+% %             for k = 1:nChan
+% %                 for rind = 1:sts.trial{k}(end)
+% %                     cfg.spikechannel = k;
+% %                     %         cfg.feedback = 'no';
+% %                     cfg.trials = ~ismember([1:sts.trial{k}(end)],rind);
+% %                     stSpecPerTrial(k, rind) = ft_spiketriggeredspectrum_stat(cfg, sts);
+% %                 end
+% %             end
+% %             if ~allCfg.flagSecond
+% %                 fname = sprintf('%sstSpecVar.mat', fbase);
+% %             else
+% %                 fname = sprintf('%sstSpecVar_Second.mat', fbase);
+% %             end
+% %             ESIsave(fullfile(savefile, fname), 'stSpecPerTrial');
+% %             clear stSpecPerTrial
+% %         end
     end
 
 %% STA

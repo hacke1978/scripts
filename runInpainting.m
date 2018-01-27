@@ -14,7 +14,7 @@ load(fullfile(stimSetAll, 'imSetLowSinger.mat'));
 %%
 name = 'ares';
 saveDir = '/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/Inpainting/';
-if strcmp(name, 'hermes')
+if strcmp(name, 'Hermes')
     load(fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/RFmaps/', sprintf('GRFs_Fit_%02d.mat', 64)));
     screenSize = [1680 1050];
     fixPoint = screenSize/2;
@@ -23,7 +23,7 @@ if strcmp(name, 'hermes')
         RFs(n).centerposy = screenSize(2) - RFs(n).centerposy;
     end
     caccept = ones(1, length(RFs));
-elseif strcmp(name, 'isis')
+elseif strcmp(name, 'Isis')
     load(fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/RFmaps/', sprintf('GRFs_Fit_v1.mat')))
     for n=1:32
         RFss(n).centerposx = RFs{n}.gauss2D.centerposx;
@@ -38,7 +38,7 @@ elseif strcmp(name, 'isis')
     fixPoint = screenSize/2;
     stimCenter = [960+16 660-136];
     caccept = ~ismember(1:32, [9 13 14 16 22 23 24 26 31 32]);
-elseif strcmp(name, 'ares')
+elseif strcmp(name, 'Ares')
     load(fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis/RFmaps/', sprintf('GRFs_Fit_v1_ares.mat')))
     for n=1:32
         RFss(n).centerposx = RFs{n}.gauss2D.centerposx;
