@@ -27,7 +27,7 @@ if ~isfield(header,'Fs')
 end
 
 header.channelNum = 0;
-%% LFP
+% LFP
 lfp = [];
 if cfg.processLfp
     fprintf('Process LFP: ')
@@ -79,6 +79,9 @@ if cfg.processLfp
     % filter data with zero-phase
     muax.data = filtfilt(b, a, muax.data);
     
+    % get raw mua here
+    mua = muax;
+
     % rectify
     muax.data  = abs(muax.data);
     
@@ -86,27 +89,34 @@ if cfg.processLfp
     fprintf(', decimate')
     for iDecimation = 1:length(cfg.decimation)
         muax.data = decimate(muax.data, cfg.decimation(iDecimation), 'FIR');
+        mua.data = decimate(mua.data, cfg.decimation(iDecimation), 'FIR');
     end
     muax.date = datestr(now());
     muax.fsample = header.Fs/prod(cfg.decimation);
-    
     muax = {muax};
+    
+    mua.date = datestr(now());
+    mua.fsample = header.Fs/prod(cfg.decimation);
+    mua = {mua};
     % ESIsave
     if cfg.save
         muaFile = fullfile(cfg.targetFolder, [basename, '.muax']);
-        fprintf(', save %s', muaFile)
+        rawMuaFile = fullfile(cfg.targetFolder, [basename, '.mua']);
+        fprintf(', save %s', rawMuaFile)
         try
             ESIsave(muaFile, 'muax')
+            ESIsave(rawMuaFile, 'mua')
         catch me
             warning('Using -v7.3 flag for saving due to data length')
             ESIsave(muaFile, 'muax')
+            ESIsave(rawMuaFile, 'mua')
         end
     end
     fprintf('\n')
 end
 outFile.lfpFile = lfpFile;
 outFile.muaFile = muaFile;
-
+outFile.rawMuaFile = rawMuaFile;
 % clean up if no output arguments
 if nargout == 0
     clear lfp mua data

@@ -30,14 +30,14 @@ for ii=1:length(filename)
 end
 
 % get events and transorm into BR style
-%LFP and MUA are slurmed
+% LFP and MUA are slurmed
 
 switch cfg.calcLocation
     case 'slurm'
 %         originalDirectory = pwd();
 %         cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
         license('inuse')
-        out = slurmfun(@make_lfp_mua, allCfg, 'partition', '16GB',  'waitForToolboxes', {'signal_toolbox'}, 'stopOnError', false);
+        out = slurmfun(@make_lfp_mua, allCfg, 'partition', '8GBS',  'waitForToolboxes', {'signal_toolbox'}, 'stopOnError', false);
 %         cd(originalDirectory);
     case 'local'
         out = cellfun(@make_lfp_mua, allCfg, 'UniformOutput', false);
@@ -46,8 +46,10 @@ end
 outFiles = cat(2, out{:});
 lfpFiles = cat(2, {outFiles.lfpFile});
 muaFiles = cat(2, {outFiles.muaFile});
+rawMuaFiles = cat(2, {outFiles.rawMuaFile});
 lfpFile = [lfpFiles{1}(1:strfind(lfpFiles{1}, 'xWav')+3) '.lfp'];
 merge_processed_files(lfpFiles, lfpFile, true)
 muaFile = [muaFiles{1}(1:strfind(muaFiles{1}, 'xWav')+3) '.muax'];
 merge_processed_files(muaFiles, muaFile, true)
-
+rawMuaFile = [rawMuaFiles{1}(1:strfind(rawMuaFiles{1}, 'xWav')+3) '.mua'];
+merge_processed_files(rawMuaFiles, rawMuaFile, true)

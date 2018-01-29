@@ -186,7 +186,6 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
 
 %% Connectivity
     function runConnectivity(lfpSel, muaSel)
-        muaSel.label = strcat('muax-', muaSel.label);
         adata = ft_appenddata([], lfpSel, muaSel);
         
         %ppc auto
@@ -215,21 +214,20 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         cfg.trials = trialsClean(trialsChosen);
         cfg.toilim = allCfg.timeSustained;
         spikeSel = ft_spike_select(cfg, spikeClean);
-                trl = unique([spikeSel.trial{:}]);
-                spike.trialtime = repmat(allCfg.timeSustained, length(trl), 1);
-                for ch = 1:nChan
-                    for tr = 1:length(trl)
-                        spikeSel.trial{ch}(spikeSel.trial{ch}==trl(tr)) = tr;
-                    end
-                end
-                spikeSel.label = strcat('label ',spikeSel.label);
-                lfpSel.cfg.trl = repmat(allCfg.timeSustained, length(trl), 1);
-                spikeSel.timestamp = spikeSel.time;
+        trl = unique([spikeSel.trial{:}]);
+        spike.trialtime = repmat(allCfg.timeSustained, length(trl), 1);
+        for ch = 1:nChan
+            for tr = 1:length(trl)
+                spikeSel.trial{ch}(spikeSel.trial{ch}==trl(tr)) = tr;
+            end
+        end
+        spikeSel.label = strcat('label ',spikeSel.label);
+        lfpSel.cfg.trl = repmat(allCfg.timeSustained, length(trl), 1);
+        spikeSel.timestamp = spikeSel.time;
         
         % Then do it
         cfg = [];
-        %         cfg.method = 'mtmconvol';
-        cfg.method = 'mtmfft';
+        cfg.method = 'mtmconvol';
         cfg.foi    = 2:2:120;
         cfg.t_ftimwin = 7./cfg.foi; % watch out that the first frequency is not too long duration, so have to set to a minimum value
         twin = allCfg.timeSustained(2)-allCfg.timeSustained(1);
@@ -255,23 +253,23 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
         
         clear stSpec
         
-% %         if allCfg.runErrorBars
-% %             for k = 1:nChan
-% %                 for rind = 1:sts.trial{k}(end)
-% %                     cfg.spikechannel = k;
-% %                     %         cfg.feedback = 'no';
-% %                     cfg.trials = ~ismember([1:sts.trial{k}(end)],rind);
-% %                     stSpecPerTrial(k, rind) = ft_spiketriggeredspectrum_stat(cfg, sts);
-% %                 end
-% %             end
-% %             if ~allCfg.flagSecond
-% %                 fname = sprintf('%sstSpecVar.mat', fbase);
-% %             else
-% %                 fname = sprintf('%sstSpecVar_Second.mat', fbase);
-% %             end
-% %             ESIsave(fullfile(savefile, fname), 'stSpecPerTrial');
-% %             clear stSpecPerTrial
-% %         end
+        % %         if allCfg.runErrorBars
+        % %             for k = 1:nChan
+        % %                 for rind = 1:sts.trial{k}(end)
+        % %                     cfg.spikechannel = k;
+        % %                     %         cfg.feedback = 'no';
+        % %                     cfg.trials = ~ismember([1:sts.trial{k}(end)],rind);
+        % %                     stSpecPerTrial(k, rind) = ft_spiketriggeredspectrum_stat(cfg, sts);
+        % %                 end
+        % %             end
+        % %             if ~allCfg.flagSecond
+        % %                 fname = sprintf('%sstSpecVar.mat', fbase);
+        % %             else
+        % %                 fname = sprintf('%sstSpecVar_Second.mat', fbase);
+        % %             end
+        % %             ESIsave(fullfile(savefile, fname), 'stSpecPerTrial');
+        % %             clear stSpecPerTrial
+        % %         end
     end
 
 %% STA
@@ -290,8 +288,14 @@ if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
             cfg.feedback = 'no';
             sta(k) = ft_spiketriggeredaverage(cfg, dataSel);
         end
-        fname = sprintf('cond%02d_sta.mat', cnd);
-        ESIsave(fullfile(savefile, fname), 'sta');
+        if ~allCfg.flagSecond
+            fname = sprintf('%sta.mat', fbase);
+            ESIsave(fullfile(savefile, fname), 'sta');
+        else
+            sta_Second = sta;
+            fname = sprintf('%sta_Second.mat', fbase);
+            ESIsave(fullfile(savefile, fname), 'sta_Second');
+        end
         clear sta
     end
 end

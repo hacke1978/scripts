@@ -1,5 +1,6 @@
 function analyze_session(allCfg)
 addpath('/mnt/hpx/slurm/uranc/fieldtrip/');
+% addpath('/mnt/v7k/projects/MWNaturalPredict/fieldtrip');
 ft_defaults
 
 if ~isfield(allCfg, 'filterLineNoise');    allCfg.filterLineNoise = false; end
@@ -42,35 +43,6 @@ end
 
 % Load the data - handles session merging
 for ii=1:length(filename);
-    % Remove 50HzLine Noise from RAW LFP Data
-    %     if allCfg.filterLineNoise
-    %         if isempty(dir(fullfile(filename{ii}, '*_choppedbsline.lfp')))
-    %
-    %             % get full trial
-    %             pathLFP = dir(fullfile(filename{ii}, '*xWav.lfp'));
-    %             lfpfull = load(fullfile(filename{ii}, pathLFP.name), '-mat');
-    %
-    %             % remove line noise
-    %             %% USE Same
-    %             cfg = [];
-    %             cfg.bsfilter = 'yes';
-    %             cfg.bsfreq   = [49.9 50.1];
-    %             cfg.bsinstabilityfix = 'reduce';
-    %             lfpfull.data = ft_preprocessing(cfg, lfpfull.data);
-    %
-    %             %Chop into trials
-    %             tok = strsplit(filename, '/');
-    %             [trialEnd, trialStart, trialStimOn, Cond, taccept] = getSnipsForSession(tok{end}, allCfg.type);
-    %             taccept = taccept == 0;
-    %             clear lfp
-    %             data  = chop_it(lfpfull, trialEnd, trialStart, Cond, taccept, trialStimOn);
-    %
-    %             saveName = fullfile(filename{ii}, pathLFP.name(1:end-4));
-    %             save([saveName '_choppedbsline.lfp'],'data', '-v7.3');
-    %             clear data lfpfull
-    %         end
-    %     end
-    
     % get filenamaes
     if allCfg.filterLineNoise
         pathLFP = dir(fullfile(filename{ii}, '*_chopped_filtered.lfp'));
@@ -108,24 +80,24 @@ for ii=1:length(filename);
     end
 end
 
-% if length(filename)>1
-%     % get merge dirs
-%     tok = strfind(filename{1}, '/');
-%     mname = strsplit(mergeName, '/');
-%     mkdir(fullfile(filename{1}(1:tok(end)), mname{end}));
-%     mergeDir = fullfile(filename{1}(1:tok(end)), mname{end}, mname{end});
-%
-%     % save lfp
-%     data = lfp.data;
-%     save([mergeDir '_chopped.lfp'],'data', '-v7.3');
-%     clear data;
-%     % save muax
-%     data = muax.data;
-%     save([mergeDir '_chopped.muax'],'data', '-v7.3');
-%     clear data;
-%     % save spike
-%     save([mergeDir '_chopped.spike'],'spike', '-v7.3');
-% end
+if length(filename)>1
+    % get merge dirs
+    tok = strfind(filename{1}, '/');
+    mname = strsplit(mergeName, '/');
+    mkdir(fullfile(filename{1}(1:tok(end)), mname{end}));
+    mergeDir = fullfile(filename{1}(1:tok(end)), mname{end}, mname{end});
+
+    % save lfp
+    data = lfp.data;
+    save([mergeDir '_chopped.lfp'],'data', '-v7.3');
+    clear data;
+    % save muax
+    data = muax.data;
+    save([mergeDir '_chopped.muax'],'data', '-v7.3');
+    clear data;
+    % save spike
+    save([mergeDir '_chopped.spike'],'spike', '-v7.3');
+end
 
 % get conditions / channels
 if strcmp(allCfg.name, 'Hermes')
@@ -212,61 +184,61 @@ Cond = Cond(taccept);
 trialsClean = find(taccept);
 condLib = unique(Cond);
 
-% % if strcmp(allCfg.type, 'grating-ori')
-% %     CondSF = CondSF(taccept);
-% %     condLibSF = unique(CondSF);
-% %     for sf=1:length(condLibSF)
-% %         for cnd=1:length(condLib)
-% %             cnd
-% %             trialsChosen = find(Cond == condLib(cnd) & CondSF == condLibSF(sf));
-% %             %                 tok = strsplit(filename, '/');
-% %             %                 if strcmp(tok{end}, 'hermes_20170428_fixation-naturalim_15')
-% %             %                     trialsChosen = trialsChosen(1:18);
-% %             %                 end
-% %             analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd), condLibSF(sf));
-% %         end
-% %     end
-% % elseif strcmp(allCfg.type, 'NatImSEQ')
-% %     %     maskFirst = muax.data.trialinfo(taccept, end-5);
-% %     %     maskSize = muax.data.trialinfo(taccept, end-4);
-% %     %     maskPos = muax.data.trialinfo(taccept, end-2);
-% %     %     maskSize(maskSize==6 & maskPos==2) = 6.01;
-% %     %     maskLib = unique(maskSize);
-% %     %     seqLib = unique(maskFirst);
-% %     for cnd=1:length(condLib)
-% %         %         for ms=1:length(maskLib)
-% %         %             for sq=1:length(seqLib)
-% %         %                 trialsChosen = find(Cond==condLib(cnd) & maskSize == maskLib(ms) & maskFirst == seqLib(sq));
-% %         trialsChosen = find(Cond==condLib(cnd));
-% %         %first stim
-% %         allCfg.flagSecond = false;
-% %         allCfg.timeSustained = allCfg.timeSustained_First;
-% %         analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd));
-% %         %                     seqLib(sq)*(length(condLib)*length(maskLib))+length(maskLib)*(cnd-1)+ms)
-% %         
-% %         % second stim
-% %         allCfg.flagSecond = true;
-% %         allCfg.timeSustained = allCfg.timeSustained_Second;
-% %         analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd));
-% %         %                     seqLib(sq)*(length(condLib)*length(maskLib))+length(maskLib)*(cnd-1)+ms)
-% %         %             end
-% %         %         end
-% %     end
-% % else
-% %     for cnd=1:length(condLib)
-% %         trialsChosen = find(Cond==condLib(cnd))';
-% %         length(trialsChosen)
-% %         %             tok = strsplit(filename, '/');
-% %         %             if strcmp(tok{end}, 'hermes_20170428_fixation-naturalim_15')
-% %         %                 trialsChosen = trialsChosen(1:18);
-% %         %             end
-% %         analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd))
-% %     end
-% % end
+if strcmp(allCfg.type, 'grating-ori')
+    CondSF = CondSF(taccept);
+    condLibSF = unique(CondSF);
+    for sf=1:length(condLibSF)
+        for cnd=1:length(condLib)
+            cnd
+            trialsChosen = find(Cond == condLib(cnd) & CondSF == condLibSF(sf));
+            %                 tok = strsplit(filename, '/');
+            %                 if strcmp(tok{end}, 'hermes_20170428_fixation-naturalim_15')
+            %                     trialsChosen = trialsChosen(1:18);
+            %                 end
+            analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd), condLibSF(sf));
+        end
+    end
+elseif strcmp(allCfg.type, 'NatImSEQ')
+    %     maskFirst = muax.data.trialinfo(taccept, end-5);
+    %     maskSize = muax.data.trialinfo(taccept, end-4);
+    %     maskPos = muax.data.trialinfo(taccept, end-2);
+    %     maskSize(maskSize==6 & maskPos==2) = 6.01;
+    %     maskLib = unique(maskSize);
+    %     seqLib = unique(maskFirst);
+    for cnd=1:length(condLib)
+        %         for ms=1:length(maskLib)
+        %             for sq=1:length(seqLib)
+        %                 trialsChosen = find(Cond==condLib(cnd) & maskSize == maskLib(ms) & maskFirst == seqLib(sq));
+        trialsChosen = find(Cond==condLib(cnd));
+        %first stim
+        allCfg.flagSecond = false;
+        allCfg.timeSustained = allCfg.timeSustained_First;
+        analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd));
+        %                     seqLib(sq)*(length(condLib)*length(maskLib))+length(maskLib)*(cnd-1)+ms)
+        
+        % second stim
+        allCfg.flagSecond = true;
+        allCfg.timeSustained = allCfg.timeSustained_Second;
+        analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd));
+        %                     seqLib(sq)*(length(condLib)*length(maskLib))+length(maskLib)*(cnd-1)+ms)
+        %             end
+        %         end
+    end
+else
+    for cnd=1:length(condLib)
+        trialsChosen = find(Cond==condLib(cnd))';
+        length(trialsChosen)
+        %             tok = strsplit(filename, '/');
+        %             if strcmp(tok{end}, 'hermes_20170428_fixation-naturalim_15')
+        %                 trialsChosen = trialsChosen(1:18);
+        %             end
+        analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, condLib(cnd))
+    end
+end
 
 % Save Baseline TFR
-% if (allCfg.runTFR && allCfg.runBaseline); runTFR_Baseline(allCfg, lfpClean); end
-if (allCfg.runSFC && allCfg.runBaseline); runSFC_Baseline(allCfg, lfpClean, spikeClean); end
+if (allCfg.runTFR && allCfg.runBaseline); runTFR_Baseline(allCfg, lfpClean); end
+% if (allCfg.runSFC && allCfg.runBaseline); runSFC_Baseline(allCfg, lfpClean, spikeClean); end
 if (allCfg.runSTA && allCfg.Baseline); runSTA_Baseline(allCfg, lfpClean, spikeClean); end
 end
 
