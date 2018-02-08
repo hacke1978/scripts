@@ -1,5 +1,4 @@
 function analyze_condition(allCfg, lfpClean, muaClean, spikeClean, trialsClean, trialsChosen, varargin)
-
 % Primer
 if nargin==8
     cnd = varargin{1};
@@ -9,11 +8,9 @@ else
     cnd = varargin{1};
     fbase = sprintf('cond%02d_%s', cnd, allCfg.tag);
 end
-
-savefile = allCfg.outputfile;
 nChan = length(lfpClean.label);
 
-% Create LFP MUA Trials for full trial
+%% Create LFP MUA Trials for full trial
 cfg = [];
 cfg.trials = trialsChosen;
 cfg.toilim = allCfg.timeAll;
@@ -24,12 +21,12 @@ cfg.trials = trialsChosen;
 cfg.toilim = allCfg.timeAll;
 muaSel = ft_redefinetrial(cfg, muaClean);
 
-% run stuff
-if allCfg.runTimelockLFP; runTimelockLFP(lfpSel); end
-if allCfg.runTimelockMUAX; runTimelockMUAX(muaSel); end
-if allCfg.runPSTH; runPSTH(spikeClean); end
+%% run stuff
+if allCfg.runTimelockLFP; runTimelockLFP(allCfg, fbase, lfpSel); end
+if allCfg.runTimelockMUAX; runTimelockMUAX(allCfg, fbase, muaSel); end
+if allCfg.runPSTH; runPSTH(allCfg, fbase, trialsClean, trialsChosen, spikeClean); end
 
-% Create LFP MUA Trials for sustained trial
+%% Create LFP MUA Trials for sustained trial
 cfg = [];
 cfg.trials = trialsChosen;
 cfg.toilim = allCfg.timeSustained;
@@ -41,261 +38,186 @@ cfg.trials = trialsChosen;
 cfg.toilim = allCfg.timeSustained;
 muaSel = ft_redefinetrial(cfg, muaClean);
 
-% Computes the multitaper fft
-if allCfg.runTFR; runTFR(lfpSel); end
-if allCfg.runConnectivity; runConnectivity(lfpSel, muaSel); end
-if allCfg.runSFC; runSFC(spikeClean, lfpSel); end
-if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
+%% Computes the multitaper fft
+if allCfg.runTFR; runTFR(allCfg, fbase, trialsChosen, lfpSel); end
+if allCfg.runConnectivity; runConnectivity(allCfg, fbase, trialsChosen, lfpSel, muaSel); end
+% if allCfg.runSFC; runSFC(spikeClean, lfpSel); end
+% if allCfg.runSTA; runSTA(spikeClean, lfpSel); end
+return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%           Subfunctions           %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Timelock LFP
-    function runTimelockLFP(lfpSel)
-        cfg = [];
-        cfg.keeptrials = 'no';
-        cfg.removemean = 'yes';
-        cfg.vartrllength = 2;
-        timelockLFP = ft_timelockanalysis(cfg, lfpSel);
-        
-        cfg = [];
-        cfg.baseline = allCfg.timeBaseline;
-        timelockLFP = ft_timelockbaseline(cfg, timelockLFP);
-        
-        % save
-        fname = sprintf('%stimelockLFP.mat', fbase);
-        ESIsave(fullfile(savefile, fname), 'timelockLFP');
-        clear timelockLFP
-    end
+function runTimelockLFP(allCfg, fbase, lfpSel)
+cfg = [];
+cfg.keeptrials = 'no';
+cfg.removemean = 'yes';
+cfg.vartrllength = 2;
+timelockLFP = ft_timelockanalysis(cfg, lfpSel);
+
+cfg = [];
+cfg.baseline = allCfg.timeBaseline;
+timelockLFP = ft_timelockbaseline(cfg, timelockLFP);
+
+% save
+fname = sprintf('%stimelockLFP.mat', fbase);
+ESIsave(fullfile(allCfg.outputfile, fname), 'timelockLFP');
+clear timelockLFP
+return
 
 %% Timelock MUAX
-    function runTimelockMUAX(lfpSel)
-        cfg = [];
-        cfg.keeptrials = 'no';
-        cfg.removemean = 'yes';
-        cfg.vartrllength = 2;
-        timelockMUAX = ft_timelockanalysis(cfg, muaSel);
-        
-        cfg = [];
-        cfg.baseline = allCfg.timeBaseline;
-        timelockMUAX = ft_timelockbaseline(cfg, timelockMUAX);
-        
-        cfg = [];
-        cfg.timwin = [-0.005 0.005];
-        cfg.spikechannel = muaSel.label;
-        timelockMUAX = ft_spikedensity(cfg, timelockMUAX);
-        
-        %save
-        fname = sprintf('%stimelockMUAX.mat', fbase);
-        ESIsave(fullfile(savefile, fname), 'timelockMUAX');
-        clear timelockMUAX
-    end
+function runTimelockMUAX(allCfg, fbase, muaSel)
+cfg = [];
+cfg.keeptrials = 'no';
+cfg.removemean = 'yes';
+cfg.vartrllength = 2;
+timelockMUAX = ft_timelockanalysis(cfg, muaSel);
+
+cfg = [];
+cfg.baseline = allCfg.timeBaseline;
+timelockMUAX = ft_timelockbaseline(cfg, timelockMUAX);
+
+cfg = [];
+cfg.timwin = [-0.005 0.005];
+cfg.spikechannel = muaSel.label;
+timelockMUAX = ft_spikedensity(cfg, timelockMUAX);
+
+%save
+fname = sprintf('%stimelockMUAX.mat', fbase);
+ESIsave(fullfile(allCfg.outputfile, fname), 'timelockMUAX');
+clear timelockMUAX
+return
 
 %% PSTH
-    function runPSTH(spikeClean)
-        spikeClean.trialtime(:, 1) = allCfg.timeAll(1);
-        spikeClean.trialtime(:, 2) = allCfg.timeAll(2);
-        
-        cfg = [];
-        cfg.binsize = 0.02;
-        cfg.trials = [trialsClean(trialsChosen)];
-        cfg.keeptrials = 'no';
-        trialPSTH = ft_spike_psth(cfg, spikeClean);
-        
-        cfg = [];
-        cfg.baseline = [-0.5 0];
-        cfg.keeptrials = 'yes';
-        trialPSTH = ft_timelockbaseline(cfg, trialPSTH);
-        
-        % save these
-        fname = sprintf('%strialPSTH.mat', fbase);
-        ESIsave(fullfile(savefile, fname), 'trialPSTH');
-        clear trialPSTH
-        
-        if allCfg.runErrorBars
-            cfg = [];
-            cfg.binsize = 0.02;
-            cfg.trials = trialsClean(trialsChosen);
-            cfg.keeptrials = 'no';
-            
-            trialPSTHVar = ft_spike_psth(cfg, spikeClean);
-            fname = sprintf('%strialPSTHVar.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'trialPSTHVar');
-        end
-    end
+function runPSTH(allCfg, fbase, trialsClean, trialsChosen, spikeClean)
+spikeClean.trialtime(:, 1) = allCfg.timeAll(1);
+spikeClean.trialtime(:, 2) = allCfg.timeAll(2);
+
+cfg = [];
+cfg.binsize = 0.02;
+cfg.trials = [trialsClean(trialsChosen)];
+cfg.keeptrials = 'no';
+trialPSTH = ft_spike_psth(cfg, spikeClean);
+
+cfg = [];
+cfg.baseline = [-0.5 0];
+cfg.keeptrials = 'yes';
+trialPSTH = ft_timelockbaseline(cfg, trialPSTH);
+
+% save these
+fname = sprintf('%strialPSTH.mat', fbase);
+ESIsave(fullfile(allCfg.outputfile, fname), 'trialPSTH');
+clear trialPSTH
+
+if allCfg.runErrorBars
+    cfg = [];
+    cfg.binsize = 0.02;
+    cfg.trials = trialsClean(trialsChosen);
+    cfg.keeptrials = 'no';
+    
+    trialPSTHVar = ft_spike_psth(cfg, spikeClean);
+    fname = sprintf('%strialPSTHVar.mat', fbase);
+    ESIsave(fullfile(allCfg.outputfile, fname), 'trialPSTHVar');
+end
+return
 
 %% TFR
-    function runTFR(lfpSel)
-        cfg = [];
-        cfg.output     = 'pow';
-        cfg.channel    = 'all';
-        cfg.method     = 'mtmfft';
-        if strcmp(allCfg.type, 'NatImSEQ')
-            cfg.foi        = 10:2.5:120;
-        else
-            cfg.foi        = 10:2:120;
-        end
-        cfg.channel = lfpSel.label;
-        cfg.taper      = 'dpss';
-        cfg.tapsmofrq = 7;
-        
-        lfpPower = ft_freqanalysis(cfg, lfpSel);
-        if ~allCfg.flagSecond
-            fname = sprintf('%slfpPower.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'lfpPower');
-            clear lfpPower
-        else
-            lfpPower_Second = lfpPower;
-            fname = sprintf('%slfpPower_Second.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'lfpPower_Second');
-            clear lfpPower_Second
-        end
-        
-        if allCfg.runErrorBars
-            % Get event
-            cfg = [];
-            cfg.trials = trialsChosen;
-            cfg.toilim = allCfg.timeSustained;
-            lfpSel = ft_redefinetrial(cfg, lfpClean);
-            
-            % Computes the multitaper fft EVENT
-            cfg = [];
-            cfg.output     = 'pow';
-            cfg.channel    = 'all';
-            cfg.method     = 'mtmfft';
-            cfg.foi        = 10:2:120;
-            cfg.channel = lfpSel.label;
-            cfg.taper      = 'dpss';
-            cfg.tapsmofrq = 7*ones(1,length(cfg.foi));
-            
-            for tr=1:length(trialsChosen)
-                cfg.trials = ~ismember(trialsChosen, trialsChosen(tr));
-                lfpPowerVar(tr) = ft_freqanalysis(cfg, lfpSel);
-            end
-            if ~allCfg.flagSecond
-                fname = sprintf('%slfpPowerVar.mat', fbase);
-                ESIsave(fullfile(savefile, fname), 'lfpPowerVar');
-            else
-                lfpPowerVar_Second = lfpPowerVar;
-                fname = sprintf('%slfpPowerVar_Second.mat', fbase);
-                ESIsave(fullfile(savefile, fname), 'lfpPowerVar_Second');
-            end
-            clear TFRmultEvent
-        end
+function runTFR(allCfg, fbase, trialsChosen, lfpSel)
+lfpSel = rmfield(lfpSel, 'label_tdt');
+cfg = [];
+cfg.output     = 'pow';
+cfg.channel    = 'all';
+cfg.method     = 'mtmfft';
+if strcmp(allCfg.type, 'NatImSEQ')
+    cfg.foi        = 10:2.5:120;
+else
+    cfg.foi        = 10:2:120;
+end
+cfg.channel = lfpSel.label;
+cfg.taper      = 'dpss';
+cfg.tapsmofrq = 7*ones(1,length(cfg.foi));
+
+lfpPower = ft_freqanalysis(cfg, lfpSel);
+if ~allCfg.flagSecond
+    fname = sprintf('%slfpPower.mat', fbase);
+    ESIsave(fullfile(allCfg.outputfile, fname), 'lfpPower');
+    clear lfpPower
+else
+    lfpPower_Second = lfpPower;
+    fname = sprintf('%slfpPower_Second.mat', fbase);
+    ESIsave(fullfile(allCfg.outputfile, fname), 'lfpPower_Second');
+    clear lfpPower_Second
+end
+
+if allCfg.runErrorBars
+    % Computes the multitaper fft EVENT
+    cfg = [];
+    cfg.output     = 'pow';
+    cfg.channel    = 'all';
+    cfg.method     = 'mtmfft';
+    cfg.foi        = 10:2:120;
+    cfg.channel = lfpSel.label;
+    cfg.taper      = 'dpss';
+    cfg.tapsmofrq = 7*ones(1,length(cfg.foi));
+    
+    for tr=1:length(trialsChosen)
+        cfg.trials = ~ismember(trialsChosen, trialsChosen(tr));
+        lfpPowerVar(tr) = ft_freqanalysis(cfg, lfpSel);
     end
+    if ~allCfg.flagSecond
+        fname = sprintf('%slfpPowerVar.mat', fbase);
+        ESIsave(fullfile(allCfg.outputfile, fname), 'lfpPowerVar');
+        clear lfpPowerVar
+    else
+        lfpPowerVar_Second = lfpPowerVar;
+        fname = sprintf('%slfpPowerVar_Second.mat', fbase);
+        ESIsave(fullfile(allCfg.outputfile, fname), 'lfpPowerVar_Second');
+        clear lfpPowerVar_Second
+    end
+    clear TFRmultEvent
+end
+return
 
 %% Connectivity
-    function runConnectivity(lfpSel, muaSel)
-        adata = ft_appenddata([], lfpSel, muaSel);
-        
-        %ppc auto
-        cfg            = [];
-        cfg.output     = 'powandcsd';
-        cfg.method     = 'mtmfft';
-        cfg.foi        = 10:2:120;
-        cfg.taper      = 'dpss';
-        cfg.tapsmofrq  = 7*ones(1,length(cfg.foi));
-        cfg.keeptrials = 'yes';
-        cfg.channel    = 'all';
-        cfg.channelcmb = 'all';
-        freq           = ft_freqanalysis(cfg, adata);
-        
-        cfg            = [];
-        cfg.method     = 'coh';
-        muaxCoherence  = ft_connectivityanalysis(cfg, freq);
-        fname = sprintf('cond%02d_muaxCoherence.mat', cnd);
-        ESIsave(fullfile(savefile, fname), 'muaxCoherence');
-        clear muaxCoherence
-    end
+function runConnectivity(allCfg, fbase, trialsChosen, lfpSelAll, muaSelAll)
+muaSelAll.label = strcat('muax-', muaSelAll.label);
+label_tdt = muaSelAll.label_tdt;
+muaSelAll = rmfield(muaSelAll, 'label_tdt');
+lfpSelAll = rmfield(lfpSelAll, 'label_tdt');
+%         for ch=1:length(muaSelAll.label)
+%             cfg = [];
+%             cfg.channel = muaSelAll.label(ch);
+%             muaSelCh = ft_selectdata(cfg, muaSelAll);
+adata = ft_appenddata([], lfpSelAll, muaSelAll);
 
-%% SFC
-    function runSFC(spikeClean, lfpSel)
-        cfg = [];
-        cfg.trials = trialsClean(trialsChosen);
-        cfg.toilim = allCfg.timeSustained;
-        spikeSel = ft_spike_select(cfg, spikeClean);
-        trl = unique([spikeSel.trial{:}]);
-        spike.trialtime = repmat(allCfg.timeSustained, length(trl), 1);
-        for ch = 1:nChan
-            for tr = 1:length(trl)
-                spikeSel.trial{ch}(spikeSel.trial{ch}==trl(tr)) = tr;
-            end
-        end
-        spikeSel.label = strcat('label ',spikeSel.label);
-        lfpSel.cfg.trl = repmat(allCfg.timeSustained, length(trl), 1);
-        spikeSel.timestamp = spikeSel.time;
-        
-        % Then do it
-        cfg = [];
-        cfg.method = 'mtmconvol';
-        cfg.foi    = 2:2:120;
-        cfg.t_ftimwin = 7./cfg.foi; % watch out that the first frequency is not too long duration, so have to set to a minimum value
-        twin = allCfg.timeSustained(2)-allCfg.timeSustained(1);
-        cfg.t_ftimwin(cfg.t_ftimwin > twin) = twin;
-        cfg.taper     = 'hanning';
-        [sts] = ft_spiketriggeredspectrum(cfg, lfpSel, spikeSel); % for the event period
-        
-        % Get PPC
-        cfg = [];
-        cfg.method = 'ppc1'; % use ppc1
-        for k = 1:nChan
-            cfg.spikechannel = k;
-            stSpec(k) = ft_spiketriggeredspectrum_stat(cfg, sts);
-        end
-        if ~allCfg.flagSecond
-            fname = sprintf('%sstSpec.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'stSpec');
-        else
-            stSpec_Second = stSpec;
-            fname = sprintf('%sstSpec_Second.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'stSpec_Second');
-        end
-        
-        clear stSpec
-        
-        % %         if allCfg.runErrorBars
-        % %             for k = 1:nChan
-        % %                 for rind = 1:sts.trial{k}(end)
-        % %                     cfg.spikechannel = k;
-        % %                     %         cfg.feedback = 'no';
-        % %                     cfg.trials = ~ismember([1:sts.trial{k}(end)],rind);
-        % %                     stSpecPerTrial(k, rind) = ft_spiketriggeredspectrum_stat(cfg, sts);
-        % %                 end
-        % %             end
-        % %             if ~allCfg.flagSecond
-        % %                 fname = sprintf('%sstSpecVar.mat', fbase);
-        % %             else
-        % %                 fname = sprintf('%sstSpecVar_Second.mat', fbase);
-        % %             end
-        % %             ESIsave(fullfile(savefile, fname), 'stSpecPerTrial');
-        % %             clear stSpecPerTrial
-        % %         end
-    end
-
-%% STA
-    function runSTA(lfpSel, spikeSel)
-        dataSel = ft_appendspike([], lfpSel, spikeSel);
-        
-        % Spike triggered average
-        clear staPre
-        cfg              = [];
-        cfg.keeptrials   = 'no';
-        cfg.latency      = allCfg.timeSustained;
-        for k = 1:nChan
-            cfg.spikechannel = spikeSel.label{k}; % first unit
-            cfg.channel      = lfpSel.label(k); % first four chans
-            cfg.timwin = [-0.2 0.2]; % take 400 ms
-            cfg.feedback = 'no';
-            sta(k) = ft_spiketriggeredaverage(cfg, dataSel);
-        end
-        if ~allCfg.flagSecond
-            fname = sprintf('%sta.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'sta');
-        else
-            sta_Second = sta;
-            fname = sprintf('%sta_Second.mat', fbase);
-            ESIsave(fullfile(savefile, fname), 'sta_Second');
-        end
-        clear sta
-    end
+for ch=1:length(muaSelAll.label)
+    % get spectrum
+    cfg            = [];
+    cfg.output     = 'powandcsd';
+    cfg.method     = 'mtmfft';
+    cfg.foi        = 10:2:120;
+    cfg.taper      = 'dpss';
+    cfg.tapsmofrq  = 7*ones(1,length(cfg.foi));
+    cfg.keeptrials = 'yes';
+    cfg.channel    = 'all';
+    cfg.channelcmb = [repmat(muaSelAll.label(ch), length(lfpSelAll.label), 1) lfpSelAll.label];
+    freq           = ft_freqanalysis(cfg, adata);
+    
+    % get stats
+    cfg            = [];
+    cfg.channelcmb = [repmat(muaSelAll.label(ch), length(lfpSelAll.label), 1) lfpSelAll.label];
+    cfg.method     = 'coh';
+    muaxCoherence(ch)  = ft_connectivityanalysis(cfg, freq);
 end
+if ~allCfg.flagSecond
+    fname = sprintf('%smuaxCoherence.mat', fbase);
+    ESIsave(fullfile(allCfg.outputfile, fname), 'muaxCoherence');
+    clear muaxCoherence
+else
+    muaxCoherence_Second = muaxCoherence;
+    fname = sprintf('%smuaxCoherence_Second.mat', fbase);
+    ESIsave(fullfile(allCfg.outputfile, fname), 'muaxCoherence_Second');
+    clear muaxCoherence_Second
+end
+return

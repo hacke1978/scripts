@@ -37,7 +37,7 @@ switch cfg.calcLocation
 %         originalDirectory = pwd();
 %         cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
         license('inuse')
-        out = slurmfun(@make_lfp_mua, allCfg, 'partition', '8GBS',  'waitForToolboxes', {'signal_toolbox'}, 'stopOnError', false);
+        out = slurmfun(@make_lfp_mua, allCfg, 'partition', '16GBL',  'waitForToolboxes', {'signal_toolbox'}, 'stopOnError', false);
 %         cd(originalDirectory);
     case 'local'
         out = cellfun(@make_lfp_mua, allCfg, 'UniformOutput', false);

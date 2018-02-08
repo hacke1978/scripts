@@ -18,11 +18,13 @@ if strcmp(allCfg.name, 'Hermes')
     if strcmp(allCfg.type, 'grating-ori')
         stimCenter = round(fixPoint+degDistances(1, allCfg.name)*([2 5]));
     else
-        %         stimCenter = round(fixPoint+degDistances(1)*([2 3]));
-        stimCenter = round(fixPoint+degDistances(1, allCfg.name)*([2 6.5]));
+         stimCenter = round(fixPoint+degDistances(1, allCfg.name)*([2 3]));
+%         stimCenter = round(fixPoint+degDistances(1, allCfg.name)*([2 6.5]));
     end
-    label = [RFs.label];
-    label = cellfun(@(x) str2num(x(4:end)), label);
+    label = {RFs.label};
+    label = cellfun(@(x) str2num(x(4:end)), label, 'UniformOutput', false);
+    label{33} = 127;
+    label = [label{:}]';
 elseif strcmp(allCfg.name, 'Isis')
     layout = vertcat([NaN, NaN, 27, 1, NaN, NaN],[reshape(17:26, 5, 2) [28:32]' reshape(2:16, 5, 3)]);
     stimCenter = [960+16 660-136];

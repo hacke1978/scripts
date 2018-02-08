@@ -24,6 +24,7 @@ if isempty(cfg.targetFolder);      cfg.targetFolder = folder;    end
 if ~isfield(cfg, 'muaFreqBand');   cfg.muaFreqBand = [300 6000]; end
 if ~isfield(cfg, 'pSigma');   cfg.pSigma = 3; end
 if ~isfield(cfg, 'pISI');   cfg.pISI = 1.5; end
+if ~isfield(cfg, 'pTime');   cfg.pTime = 'all'; end
 if ~isfield(cfg, 'save');          cfg.save = true;              end
 
 spikeFile = '';
@@ -59,7 +60,12 @@ if cfg.processSpike
     % filter data with zero-phase
     muat.data = filtfilt(b, a, muat.data);
     disp(cfg.pSigma)
-    minThreshold =cfg.pSigma*median(abs(muat.data)/0.6745);
+    if ischar(cfg.pTime)
+        minThreshold =cfg.pSigma*median(abs(muat.data)/0.6745);
+    else
+        tind = 1+round([cfg.pTime(1):cfg.pTime(2)]*header.Fs);
+        minThreshold =cfg.pSigma*median(abs(muat.data(tind))/0.6745);
+    end
     %     minThreshold =3*std(muat.data./0.6745);
     minISI = round(cfg.pISI*1e-3*header.Fs);
     spikes = peakseek(muat.data, minISI, minThreshold);

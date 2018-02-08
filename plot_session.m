@@ -22,7 +22,7 @@ if strcmp(allCfg.name, 'Hermes')
     caccept = ones(64, 1); caccept(7) = 0; caccept(33) = 0;
 %     caccept = strncmp([allFiles(1).RFs.label], 'V1', 10);
     if strcmp(allCfg.type, 'grating-ori')
-        stimCenter = round(fixPoint+(51*[2 5]));
+        stimCenter = round(fixPoint+(degDistances(1, allCfg.name)*[2 5]));
     elseif strcmp(filename, 'hermes_20171201_fixation-naturalim_90')
         stimCenter = round(fixPoint+(degDistances(1, allCfg.name)*[2 6]));
     else
@@ -31,7 +31,8 @@ if strcmp(allCfg.name, 'Hermes')
     for ii=1:64
         RFs(ii).centerposy = screenSize(2) - RFs(ii).centerposy;
     end
-    
+    clab = allFiles(1).lfpPower.label;
+    [RFs.label] = deal(clab{:});
     % get orientation for the RF
     if allCfg.isOri
         readOri = xlsread('/mnt/hpx/projects/MWNaturalPredict/hermesRecordingLogAa.xlsx', 'Channels');

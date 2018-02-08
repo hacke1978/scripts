@@ -240,7 +240,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
             if allCfg.isOverlay
                 plot(xLab, overlayBaseline(ch, :), 'Color', [0 0 0.5]); hold on;
             end
-            loglog(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5]); hold on;
+            loglog(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5], 'linewidth', 1); hold on;
             if strcmp(allCfg.type, 'NatImSEQ')
                 if nd<nCond/2
                     plot(xLab, data(ch, :, cnd), 'k'); hold on;
@@ -254,9 +254,24 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 if allCfg.isOverlay
                     plot(xLab, overlayData(ch, :, cnd), 'b'); hold on;
                 end
-                loglog(xLab, data(ch, :, cnd), 'r'); hold on;
+                loglog(xLab, data(ch, :, cnd), 'r', 'linewidth', 1); hold on;
             end
             xlim([10 120]);
+            if allCfg.gammaPeak
+                if strcmp(allCfg.gammaPeak, 'all'); 
+                [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
+                    fit_gammadata(round(xLab)', round(xLab), base(ch, :), data(ch, :, cnd));
+                else
+                    [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
+                    fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
+                end
+                loglog((xLab), 10.^(fit_f2), 'color', [1 0 0 ]/2)
+                loglog((xLab), 10.^(out_bias-log10(round(xLab))*out_exp), 'color', [.5 .5 .5]/2)
+                text((10^gauss_f)/2, max(10.^(fit_f2)),...
+                    sprintf('Broad: %2.2f\nNarrow: %2.2f\nFreq: %2.2f', w_pwr, w_gauss, 10^gauss_f),...
+                    'fontsize', 5); hold on;
+            end
+            
             %             ylim([min([data(ch, :, cnd) baseline(ch, :)]) max([data(ch, :, cnd) baseline(ch, :)])]);
             if strcmp(allCfg.type, 'grating-ori')
                 if mod(ndLib(cnd), nc)==1
@@ -268,6 +283,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 end
             end
             set(gca,'FontSize', 3)
+            
             % normalized to baseline
             figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
             subplot(nr, nc, nd)

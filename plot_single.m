@@ -17,13 +17,21 @@ if nargin > 4
     end
     overlayData = [];
     for ii=1:length(overlayThis)
-    overlayData = cat(3, overlayData, overlayThis(ii).avg(:, 1:minLength));
+        overlayData = cat(3, overlayData, overlayThis(ii).avg(:, 1:minLength));
     end
     overlayT = overlayThis(ii).time(:, 1:minLength);
 end
 
 if strcmp(thisFile, 'muaxCoherence')
-    tlabel = allThis(1).labelcmb;
+    tlabel = allThis(1).labelcmb(:, 2);
+        if strcmp(allCfg.name, 'Isis')
+        tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
+    elseif strcmp(allCfg.name, 'Ares')
+        tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
+    elseif strcmp(allCfg.name, 'Hermes')
+        tlabel = cellfun(@ (x) (x(4:end)), tlabel, 'UniformOutput', false);
+        tlabel(find(strncmp(tlabel, 'X', 1))) = {'127'};
+    end
     tx = allThis(1).freq;
     data = cat(3, allThis.cohspctrm);
     txlim = [min(tx) max(tx)];
@@ -59,7 +67,7 @@ elseif strcmp(thisFile, 'stSpec')
         shaded = 1;
     end
     %     txlim = [min(tx) max(tx)];
-    txlim = [10 max(tx)];
+    txlim = [20 max(tx)];
     tsel = tx>20;
 elseif strcmp(thisFile, 'timelockLFP')
     tlabel = allThis(1).label;
@@ -146,7 +154,6 @@ if strcmp(allCfg.layout, 'channels')
     for cnd=1:nCond
         cnd = sortInd(cnd);
         h = figure; if allCfg.print; set(h, 'visible', 'off'); end;
-        %         him = figure; if allCfg.print; set(him, 'visible', 'off'); end
         for ch=1:nChan
             if caccept(ch)
                 thisChan = str2num(tlabel{ch});
@@ -158,7 +165,7 @@ if strcmp(allCfg.layout, 'channels')
                     data = allThis(ch, cnd);
                     data = cat(3, data.ppc1);
                     if shaded
-                                            data_var = stsVar(:, :, cnd, ch);
+                        data_var = stsVar(:, :, cnd, ch);
                         %                         for ii=nind'
                         %                         shadedErrorBar(tx, data(ii, :), data_var(ii, :)); hold on;
                         %                         end
@@ -260,8 +267,8 @@ else
                 data = cat(3, data.ppc1);
                 if shaded
                     data_var = stsVar(:, :, cnd, ch);
-                datalim_var = stsVar(:, :, :, ch);
-                
+                    datalim_var = stsVar(:, :, :, ch);
+                    
                     %                     for ii=nind'
                     %                         shadedErrorBar(tx, data(ii, :), data_var(ii, :)); hold on;
                     %                     end
@@ -320,14 +327,14 @@ else
             end
             set(gca,'FontSize',5)
         end
-        if strcmp(allCfg.type, 'grating-ori')
+        if strcmp(allCfg.type, 'grating-ori') && ~strcmp(thisFile, 'stSpec')
             ndLayout = reshape([1:nr*nc], nc, nr)';
             for rr=1:nr-1
                 subplot(nr, nc, rr*nc)
                 cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(rr, 1:nc-1)), 'UniformOutput', false);
                 plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r'); hold on;
                 if allCfg.isOverlay
-                   plot(overlayT, mean(overlayData(ch, :, [cind{:}]), 3), 'Color', [0 0 0.5], 'LineWidth', 0.5); hold on;
+                    plot(overlayT, mean(overlayData(ch, :, [cind{:}]), 3), 'Color', [0 0 0.5], 'LineWidth', 0.5); hold on;
                 end
                 xlim(txlim);
                 set(gca,'FontSize',5)
@@ -342,7 +349,7 @@ else
                 cind = cellfun(@(x) find(x==ndLib), num2cell(ndLayout(1:nr-1, cc)), 'UniformOutput', false);
                 plot(tx, mean(data(ch, :, [cind{:}]), 3), 'r'); hold on;
                 if allCfg.isOverlay
-                   plot(overlayT, mean(overlayData(ch, :, [cind{:}]), 3), 'Color', [0 0 0.5]); hold on;
+                    plot(overlayT, mean(overlayData(ch, :, [cind{:}]), 3), 'Color', [0 0 0.5]); hold on;
                 end
                 xlim(txlim);
                 set(gca,'FontSize',5)
