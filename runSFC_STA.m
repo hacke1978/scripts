@@ -20,6 +20,7 @@ if allCfg.runErrorBars
 end
 %% Should be the same at this point
 % choose channels
+% lfp.data.sampleinfo = [ lfp.data.sampleinfo lfp.data.sampleinfo(:, 1)];
 cfg = [];
 cfg.channel = find(caccept);
 lfp = ft_selectdata(cfg, lfp.data);
@@ -32,6 +33,7 @@ spike = ft_spike_select(cfg, spike);
 lfp.hdr.Fs = lfp.fsample;
 lfp.hdr.FirstTimeStamp = 0;
 lfp.hdr.TimeStampPerSample = round(spike.hdr.Fs/lfp.fsample);
+lfp.cfg.trl = lfp.sampleinfo;
 
 spike.label = strcat(spike.label, '-spike');
 data_all = ft_appendspike([], lfp, spike);
@@ -148,7 +150,7 @@ else
             if allCfg.runSTA
                 cfg.trials = trialsChosen;
                 cfg.spikechannel = spike.label{k}; % first unit
-                cfg.channel      = lfp.label(k); % first four chans
+                cfg.channel      = lfp.label; % first four chans
                 cfg.timwin = [-0.2 0.2]; % take 400 ms
                 cfg.feedback = 'no';
                 stAv = ft_spiketriggeredaverage(cfg, data_all);

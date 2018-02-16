@@ -32,6 +32,9 @@ lfp = [];
 if cfg.processLfp
     fprintf('Process LFP: ')
     
+    lfp.hdr.TimeStampPerSample = prod(cfg.decimation);
+    lfp.hdr.Fs = header.Fs;
+    lfp.hdr.FirstTimeStamp = 0;
     lfp.header = header;
     lfp.cfg = cfg;
     lfp.cfg.file = file;

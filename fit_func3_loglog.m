@@ -1,4 +1,4 @@
-function F = fit_func3_loglog(x,P,f,p_exp)
+function F = fit_func3_loglog(x,P,f)
 
 % function for fitting a broadband + gaussian
 
@@ -17,6 +17,9 @@ function F = fit_func3_loglog(x,P,f,p_exp)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-% F= P - (x(1)-p_exp*f + x(2)*.04*sqrt(2*pi)*normpdf(10.^f,x(3),.04));
-F= P - (x(1)-p_exp*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4)));
+% F= P - (x(1)-p_exp*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),.04));
+% F= P - (x(1)-p_exp*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4)));
+% F= P - (x(1)-x(5)*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4)));
+F= P - (x(1)-x(5)*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4))...
+                    + x(6)*.04*sqrt(2*pi)*normpdf(f,x(3)+log10(2),x(7)));
 % note: .04*sqrt(2*pi) gives an amplitude of 1 to the Gaussian for x(2)=1;

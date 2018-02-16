@@ -28,8 +28,10 @@ elseif strcmp(allCfg.name, 'Hermes')
 elseif strcmp(allCfg.name, 'Ares')
     logPath = dir(fullfile(dataDirSes, '*_MatLog.mat'));
     load(fullfile(dataDirSes, logPath.name));
-    stimsetAll = '/mnt/hpx/projects/MWNaturalPredict/Ares/Stimuli';
+    stimsetAll = '/mnt/v7k/projects/MWNaturalPredict/Stimuli/Ares';
     if strcmp(allCfg.type, 'NatImFix')
+        tok = strsplit(Config.Flash.Directory, '\');
+        tok{end}
         stimList = vertcat({Config.Protocol.ImageList.name});
         sesNo = []; stimDir = '';
         for is = 1:length(stimList)
@@ -37,6 +39,8 @@ elseif strcmp(allCfg.name, 'Ares')
             sesNo = str2num(stimParam{2});
             if sesNo > 67
                 stimDir(is, :) = fullfile(stimsetAll, sprintf('Ares_stimsetSEQColorSizeTuning%02d', sesNo));
+            elseif strcmp(tok{end}(1:end-2), 'Ares_stimsetBG')
+                stimDir(is, :) = fullfile(stimsetAll, tok{end});
             else
                 stimDir(is, :) = fullfile(stimsetAll, sprintf('Ares_stimsetSEQNatIm%02d', sesNo));
             end

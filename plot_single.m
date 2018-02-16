@@ -27,7 +27,7 @@ if strcmp(thisFile, 'muaxCoherence')
         if strcmp(allCfg.name, 'Isis')
         tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Ares')
-        tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
+        tlabel = cellfun(@ (x) (x(5:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Hermes')
         tlabel = cellfun(@ (x) (x(4:end)), tlabel, 'UniformOutput', false);
         tlabel(find(strncmp(tlabel, 'X', 1))) = {'127'};
@@ -50,7 +50,7 @@ elseif strcmp(thisFile, 'stSpec')
     if strcmp(allCfg.name, 'Isis')
         tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Ares')
-        tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
+        tlabel = cellfun(@ (x) (x(5:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Hermes')
         tlabel = cellfun(@ (x) (x(4:end)), tlabel, 'UniformOutput', false);
         tlabel(find(strncmp(tlabel, 'X', 1))) = {'127'};
@@ -74,7 +74,7 @@ elseif strcmp(thisFile, 'timelockLFP')
     if strcmp(allCfg.name, 'Isis')
         tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Ares')
-        tlabel = cellfun(@ (x) (x(7:end)), tlabel, 'UniformOutput', false);
+        tlabel = cellfun(@ (x) (x(5:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Hermes')
         tlabel = cellfun(@ (x) (x(4:end)), tlabel, 'UniformOutput', false);
         tlabel(find(strncmp(tlabel, 'X', 1))) = {'127'};
@@ -99,7 +99,7 @@ elseif strcmp(thisFile, 'timelockMUAX')
     if strcmp(allCfg.name, 'Isis')
         tlabel = cellfun(@ (x) (x(8:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Ares')
-        tlabel = cellfun(@ (x) (x(8:end)), tlabel, 'UniformOutput', false);
+        tlabel = cellfun(@ (x) (x(6:end)), tlabel, 'UniformOutput', false);
     elseif strcmp(allCfg.name, 'Hermes')
         tlabel = cellfun(@ (x) (x(4:end)), tlabel, 'UniformOutput', false);
         tlabel(find(strncmp(tlabel, 'X', 1))) = {'127'};

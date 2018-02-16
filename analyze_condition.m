@@ -104,6 +104,11 @@ cfg = [];
 cfg.baseline = [-0.5 0];
 cfg.keeptrials = 'yes';
 trialPSTH = ft_timelockbaseline(cfg, trialPSTH);
+% 
+% cfg = [];
+% cfg.timwin = [-0.005 0.005];
+% cfg.spikechannel = spikeClean.label;
+% trialPSTH = ft_spikedensity(cfg, trialPSTH);
 
 % save these
 fname = sprintf('%strialPSTH.mat', fbase);
@@ -124,7 +129,7 @@ return
 
 %% TFR
 function runTFR(allCfg, fbase, trialsChosen, lfpSel)
-lfpSel = rmfield(lfpSel, 'label_tdt');
+if strcmp(allCfg.name, 'HermesAA'); lfpSel = rmfield(lfpSel, 'label_tdt'); end; % unfortunately
 cfg = [];
 cfg.output     = 'pow';
 cfg.channel    = 'all';
@@ -182,9 +187,11 @@ return
 %% Connectivity
 function runConnectivity(allCfg, fbase, trialsChosen, lfpSelAll, muaSelAll)
 muaSelAll.label = strcat('muax-', muaSelAll.label);
-label_tdt = muaSelAll.label_tdt;
-muaSelAll = rmfield(muaSelAll, 'label_tdt');
-lfpSelAll = rmfield(lfpSelAll, 'label_tdt');
+if strcmp(allCfg.name, 'Hermes') && isfield(muaSelAll, 'label_tdt')
+    label_tdt = muaSelAll.label_tdt;
+    muaSelAll = rmfield(muaSelAll, 'label_tdt');
+    lfpSelAll = rmfield(lfpSelAll, 'label_tdt');
+end % unfortunately
 %         for ch=1:length(muaSelAll.label)
 %             cfg = [];
 %             cfg.channel = muaSelAll.label(ch);

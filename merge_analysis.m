@@ -15,13 +15,13 @@ for fl=fieldnames(outFiles)'
         savename = [thisList{tr, 1}(1:strfind(thisList{tr, 1}, 'ch')-2) '.mat'];
         for ch=1:size(thisList, 2)
             if ch == 1
-                ESIload(thisList{1},'-mat');
+                ESIload(thisList{tr, ch},'-mat');
                 if strcmp(fl{:}, 'staFiles')
                     all_stAv = stAv;
                 elseif strcmp(fl{:}, 'sfcFiles')
                     all_stSpec = stSpec;
                 elseif strcmp(fl{:}, 'sfcFilesVar')
-                    all_stSpecVar(ch, tr) = stSpecPerTrial;
+                    all_stSpecVar = stSpecPerTrial;
                 end
             else
                 ESIload(thisList{tr, ch},'-mat');
@@ -30,7 +30,7 @@ for fl=fieldnames(outFiles)'
                 elseif strcmp(fl{:}, 'sfcFiles')
                     all_stSpec = vertcat(all_stSpec, stSpec);
                 elseif strcmp(fl{:}, 'sfcFilesVar')
-                    all_stSpecVar(ch, tr) = stSpecPerTrial;
+                    all_stSpecVar = vertcat(all_stSpecVar, stSpecPerTrial);
                 end
             end
         end
@@ -38,12 +38,15 @@ for fl=fieldnames(outFiles)'
         if strcmp(fl{:}, 'staFiles')
             stAv = all_stAv;
             ESIsave(savename, 'stAv')
+            clear all_stAv stAv
         elseif strcmp(fl{:}, 'sfcFiles')
             stSpec = all_stSpec;
             ESIsave(savename, 'stSpec')
+            clear all_stSpec stSpec
         elseif strcmp(fl{:}, 'sfcFilesVar')
             stSpecPerTrial = all_stSpecVar;
             ESIsave(savename, 'stSpecPerTrial')
+            clear all_stSpecVar stSpecPerTrial
         end
     end
     fprintf('Clean up single channel files\n')

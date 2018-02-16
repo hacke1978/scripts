@@ -59,6 +59,9 @@ if strcmp(allCfg.name, 'Hermes')
     else
         if isempty(str2num(tok{end}))
             sesNo = str2num(tok{end}(1:end-1));
+            if isempty(sesNo)
+                sesNo = str2num(tok{end}(1:end-2));
+            end
         else
             sesNo = str2num(tok{end});
         end
@@ -109,8 +112,8 @@ elseif strcmp(allCfg.name, 'Ares')
     for ii=1:32
         RFss(ii).centerposx = RFs{ii}.gauss2D.centerposx;
         RFss(ii).centerposy = RFs{ii}.gauss2D.centerposy;
-        RFss(ii).sigmaX = real(RFs{ii}.gauss2D.sigmaX);
-        RFss(ii).sigmaY = double(RFs{ii}.gauss2D.sigmaY);
+        RFss(ii).sigmaX = real(RFs{ii}.gauss2D.sigmaX)*0.67;
+        RFss(ii).sigmaY = double(RFs{ii}.gauss2D.sigmaY)*0.67;
         RFss(ii).angle = RFs{ii}.gauss2D.angle;
         RFss(ii).label = sprintf('ch-%02d', ii);
     end

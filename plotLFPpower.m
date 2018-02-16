@@ -79,9 +79,9 @@ if strcmp(allCfg.layout, 'channels')
             baseline = base(:, :, 1);
         end
         cnd = sortInd(cnd);
-        h1 = figure; if allCfg.print; set(h1, 'Visible', 'off'); end;
-        h2 = figure; if allCfg.print; set(h2, 'Visible', 'off'); end;
-        h3 = figure; if allCfg.print; set(h3, 'Visible', 'off'); end;
+        h1 = figure('Visible', 'off'); %if allCfg.print; set(h1, ); end;
+        h2 = figure('Visible', 'off'); %if allCfg.print; set(h2, 'Visible', 'off'); end;
+        h3 = figure('Visible', 'off'); %if allCfg.print; set(h3, 'Visible', 'off'); end;
         %         if allCfg.onIm; him = figure; if allCfg.print; set(him, 'visible', 'off'); end; end;
         for ch=1:nChan
             if strcmp(allCfg.name, 'Isis')
@@ -99,7 +99,8 @@ if strcmp(allCfg.layout, 'channels')
             end
             nd = find((layout==chn)');
             %raw plot
-            figure(h1); if allCfg.print; set(h1, 'Visible', 'off'); end;
+            %             figure(h1); if allCfg.print; set(h1, 'Visible', 'off'); end;
+            set(0,'CurrentFigure',h1);
             subplot(nr, nc, nd);
             plot(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5]);
             plot(xLab, data(ch, :, cnd), 'r'); hold on;
@@ -109,7 +110,8 @@ if strcmp(allCfg.layout, 'channels')
             set(gca,'FontSize',5);
             
             % baseline normalized
-            figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
+            %             figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
+            set(0,'CurrentFigure',h2);
             subplot(nr, nc, nd);
             if allCfg.withErrorBars
                 shadedErrorBar(xLab, log10(data(ch, :, cnd)./(1e-20+baseline(ch, :))), ...
@@ -200,16 +202,16 @@ elseif strcmp(allCfg.layout, 'stimuli')
         if strcmp(allCfg.name, 'Isis')
             chn = str2num(yLab{ch}(7:end));
         elseif strcmp(allCfg.name, 'Ares')
-            chn = str2num(yLab{ch}(7:end));
+            chn = str2num(yLab{ch}(5:end));
         elseif strcmp(allCfg.name, 'Hermes')
             chn = str2num(yLab{ch}(4:end));
             if isempty(chn)
                 chn = 127;
             end
         end
-        h1 = figure; if allCfg.print; set(h1, 'Visible', 'off'); end;
-        h2 = figure; if allCfg.print; set(h2, 'Visible', 'off'); end;
-        h3 = figure; if allCfg.print; set(h3, 'Visible', 'off'); end;
+        h1 = figure('Visible', 'off');% if allCfg.print; set(h1, 'Visible', 'off'); end;
+        h2 = figure('Visible', 'off');% if allCfg.print; set(h2, 'Visible', 'off'); end;
+        h3 = figure('Visible', 'off');% if allCfg.print; set(h3, 'Visible', 'off'); end;
         for cnd=1:nCond
             if isfield(allCfg, 'nConds')
                 baseline = base(:, :, sum(cnd>cumsum(allCfg.nConds))+1);
@@ -234,7 +236,8 @@ elseif strcmp(allCfg.layout, 'stimuli')
             end
             cnd = sortInd(cnd);
             % raw
-            figure(h1); if allCfg.print; set(h1, 'Visible', 'off'); end;
+            %             figure(h1); if allCfg.print; set(h1, 'Visible', 'off'); end;
+            set(0,'CurrentFigure',h1);
             subplot(nr, nc, nd)
             %             plot(xLab, baseline(ch, :), 'Color', [0.5 0.5 0.5]); hold on;
             if allCfg.isOverlay
@@ -258,17 +261,18 @@ elseif strcmp(allCfg.layout, 'stimuli')
             end
             xlim([10 120]);
             if allCfg.gammaPeak
-                if strcmp(allCfg.gammaPeak, 'all'); 
-                [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
-                    fit_gammadata(round(xLab)', round(xLab), base(ch, :), data(ch, :, cnd));
+                if strcmp(allCfg.gammaPeak, 'all');
+                    [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
+                        fit_gammadata(round(xLab)', round(xLab), base(ch, :), data(ch, :, cnd));
                 else
                     [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
-                    fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
-                end
+                        fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
+                end                
+                
                 loglog((xLab), 10.^(fit_f2), 'color', [1 0 0 ]/2)
                 loglog((xLab), 10.^(out_bias-log10(round(xLab))*out_exp), 'color', [.5 .5 .5]/2)
-                text((10^gauss_f)/2, max(10.^(fit_f2)),...
-                    sprintf('Broad: %2.2f\nNarrow: %2.2f\nFreq: %2.2f', w_pwr, w_gauss, 10^gauss_f),...
+                text((10^gauss_f)/2, min(10.^(fit_f2)),...
+                    sprintf('Narrow: %2.2f\nFreq: %2.2f', w_gauss, 10^gauss_f),...
                     'fontsize', 5); hold on;
             end
             
@@ -285,7 +289,8 @@ elseif strcmp(allCfg.layout, 'stimuli')
             set(gca,'FontSize', 3)
             
             % normalized to baseline
-            figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
+            %             figure(h2); if allCfg.print; set(h2, 'Visible', 'off'); end;
+            set(0,'CurrentFigure',h2);
             subplot(nr, nc, nd)
             plot(xLab, mean(squeeze(log10(data(ch, :, :)./repmat(1e-20+baseline(ch, :), 1, 1, nCond))), 2), '--', 'Color', [0.5 0.5 0.5]); hold on;
             if allCfg.withErrorBars
