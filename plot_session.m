@@ -145,7 +145,7 @@ end
 
 %% Plot things
 plot_all(allCfg, allFiles);
-plotPatchFromIm(allCfg, allFiles);
+% plotPatchFromIm(allCfg, allFiles);
 out = [];
 out.allFiles = allFiles;
 out.allCfg = allCfg;

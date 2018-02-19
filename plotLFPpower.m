@@ -262,17 +262,22 @@ elseif strcmp(allCfg.layout, 'stimuli')
             xlim([10 120]);
             if allCfg.gammaPeak
                 if strcmp(allCfg.gammaPeak, 'all');
-                    [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
+                    [base_exp, base_bias, event_bias, event_exp, gauss_amp, gauss_freq, fit_f2, fit_linear, fit_gauss_1, fit_gauss_2] = ...
                         fit_gammadata(round(xLab)', round(xLab), base(ch, :), data(ch, :, cnd));
                 else
-                    [out_exp, out_bias, w_pwr, w_gauss, gauss_f, fit_f2] = ...
+                    [base_exp, base_bias, event_bias, event_exp, gauss_amp, gauss_freq, fit_f2, fit_linear, fit_gauss_1, fit_gauss_2] = ...
                         fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
                 end                
-                
-                loglog((xLab), 10.^(fit_f2), 'color', [1 0 0 ]/2)
-                loglog((xLab), 10.^(out_bias-log10(round(xLab))*out_exp), 'color', [.5 .5 .5]/2)
-                text((10^gauss_f)/2, min(10.^(fit_f2)),...
-                    sprintf('Narrow: %2.2f\nFreq: %2.2f', w_gauss, 10^gauss_f),...
+%                 figure
+%                 loglog((xLab), data(ch, :, cnd), 'color', [1 0 0 ]/2), hold on
+                loglog((xLab), 10.^(base_bias-log10(round(xLab))*base_exp), 'color', [.5 .5 .5]/2)
+                loglog((xLab), 10.^(fit_f2), 'color', [1 0 0 ]/2), hold on
+%                 loglog((xLab), 10.^(fit_linear), 'color', [1 0 0 ]), hold on
+%                 loglog((xLab), 10.^(fit_gauss_1), 'color', [0 1 0 ]), hold on
+%                 loglog((xLab), 10.^(fit_gauss_2), 'color', [0 0 1 ]), hold on
+%                 loglog((xLab), 10.^(event_bias-log10(round(xLab))*event_exp), 'color', [1 0 0 ]), hold on 
+                text((10^gauss_freq)/2, min(10.^(fit_f2)),...
+                    sprintf('Narrow: %2.2f\nFreq: %2.2f', gauss_amp, 10^gauss_freq),...
                     'fontsize', 5); hold on;
             end
             

@@ -20,6 +20,6 @@ function F = fit_func3_loglog(x,P,f)
 % F= P - (x(1)-p_exp*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),.04));
 % F= P - (x(1)-p_exp*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4)));
 % F= P - (x(1)-x(5)*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4)));
-F= P - (x(1)-x(5)*f + x(2)*.04*sqrt(2*pi)*normpdf(f,x(3),x(4))...
-                    + x(6)*.04*sqrt(2*pi)*normpdf(f,x(3)+log10(2),x(7)));
+F= P - (x(1)-x(2)*f + x(3)*.04*sqrt(2*pi)*normpdf(f,x(4),x(5))...
+                    + x(6)*.04*sqrt(2*pi)*normpdf(f,x(4)+log10(2),x(7)));
 % note: .04*sqrt(2*pi) gives an amplitude of 1 to the Gaussian for x(2)=1;
