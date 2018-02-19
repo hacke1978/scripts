@@ -1,4 +1,4 @@
-function [base_exp, base_bias, event_bias, event_exp, gauss_amp, gauss_freq, fit_f2, fit_linear, fit_gauss_1, fit_gauss_2] = ...
+function [base_exp, base_bias, event_bias, event_exp, gauss_amp, gauss_freq, fit_f2] = ...
                     fit_gammadata(f, f_use4fit, data_base, data_fit)
 
 % function fits broadband + gaussian
@@ -36,15 +36,13 @@ f_in=f(f_sel);
 p=polyfit(log10(f_in),log10(x_base)',1);
 base_exp=-p(1);
 base_bias = p(2);
-p=polyfit(log10(f_in),log10(x_in)',1);
-event_exp=-p(1);
-event_bias = p(2);
-maxPeak = max(log10(x_in)-event_bias+event_exp*log10(f_in'));
+
+% maxPeak = max(log10(x_in)-event_bias+event_exp*log10(f_in'));
 my_options=optimset('Display','off','Algorithm','trust-region-reflective'); % trust-region-reflective
 [x]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in')),...
-    [ event_bias  -p(1)     0   log10(50)   log10(1./sqrt(3/4))    0      log10(1./sqrt(3/4))    ],... %log10(100) 
-    [-Inf         -Inf      0   log10(35)   log10(1./sqrt(19/20))  0      log10(1./sqrt(19/20))  ],... %log10(70)    
-    [ Inf         -p(1)    Inf  log10(80)   log10(1./sqrt(2/3))    Inf    log10(1./sqrt(2/3))    ],... %log10(160)   
+    [ base_bias  base_exp    0   log10(50)   log10(1./sqrt(3/4))    0      log10(1./sqrt(3/4))    ],... %log10(100) 
+    [-Inf         -Inf       0   log10(35)   log10(1./sqrt(19/20))  0      log10(1./sqrt(19/20))  ],... %log10(70)    
+    [ Inf        base_exp    Inf log10(80)   log10(1./sqrt(2/3))    Inf    log10(1./sqrt(2/3))    ],... %log10(160)   
     my_options);
 
 event_bias=x(1);
