@@ -265,20 +265,11 @@ elseif strcmp(allCfg.layout, 'stimuli')
                     [base_bias, base_exp, event_bias, event_exp_2, gauss_amp, gauss_freq, gauss_std, fit_f2] = ...
                         fit_gammadata(round(xLab)', round(xLab), base(ch, :), data(ch, :, cnd));
                 else
-%                     [base_exp, base_bias,event_bias, event_exp,exp_coeff, gauss_amp, gauss_freq, fit_f2] = ...
-%                         fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
-                [base_bias, base_exp, event_bias, event_exp_2, gauss_amp, gauss_freq, gauss_std, fit_f2] = ...
+                    [base_bias, base_exp, event_bias, event_exp_2, gauss_amp, gauss_freq, gauss_std, fit_f2] = ...
                         fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
-                end                
-%                 figure
-%                 loglog((xLab), data(ch, :, cnd), 'color', [1 0 0 ]/2), hold on
-             %   keyboard
+                end
                 loglog((xLab), 10.^(base_bias-log10(round(xLab))*base_exp), 'color', [.5 .5 .5]/2)
                 loglog((xLab), 10.^(fit_f2), 'color', [1 0 0 ]/2), hold on
-%                 loglog((xLab), 10.^(fit_linear), 'color', [1 0 0 ]), hold on
-%                 loglog((xLab), 10.^(fit_gauss_1), 'color', [0 1 0 ]), hold on
-%                 loglog((xLab), 10.^(fit_gauss_2), 'color', [0 0 1 ]), hold on
-%                 loglog((xLab), 10.^(event_bias-log10(round(xLab))*event_exp+exp(-log10(round(xLab))*exp_coeff)), 'color', [1 0 0 ]), hold on 
                 text((10^gauss_freq)/2, min(10.^(fit_f2))/10,...
                     sprintf('Peak: %2.2f\nFreq: %2.2f\nstd: %2.2f', gauss_amp, 10^gauss_freq, 10^gauss_std),...
                     'fontsize', 5); hold on;
