@@ -260,7 +260,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 loglog(xLab, (data(ch, :, cnd)), 'r', 'linewidth', 1); hold on;
             end
             xlim([10 140]);
-            
+            %keyboard
             if allCfg.gammaPeak
                 if strcmp(allCfg.gammaPeak, 'all');
                     [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd));
@@ -268,6 +268,7 @@ elseif strcmp(allCfg.layout, 'stimuli')
                     [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
                 end
                 loglog((xLab), 10.^(fit_params.base_bias-log10(round(xLab))*fit_params.base_exp), 'color', [.5 .5 .5]/2)
+%                 loglog((xLab), 10.^(fit_params.stim_bias-log10(round(xLab))*fit_params.stim_exp), 'color', [.5 .5 .5]/2)
                 loglog((xLab), 10.^(fit_line), 'color', [1 0 0 ]/2), hold on
                 
                 % text the params

@@ -44,14 +44,15 @@ x = [];
 rms = inf;
 finit = linspace(30,80,5);
 sdinit = linspace(log10(1./sqrt(2/3)), log10(1./sqrt(19/20)),3);
-slopeinit = linspace(0, -0.5*base_exp,3);
+%slopeinit = linspace(0, -0.5*base_exp,3);
+slopeinit = [0 0.25*pi 0.5*pi];
 for iInit = 1:length(finit)
     for jSd_init = 1%:length(sdinit)
         for kSlope_init = 1:length(slopeinit)
             [x_tmp, ~, residual]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in), log10(f_in_1)),...
-                [ base_bias  slopeinit(kSlope_init) 0   log10(finit(iInit)) sdinit(jSd_init)       0     log10(finit(iInit)*2) log10(1./sqrt(3/4))    base_exp],...
-                [ 0          -Inf                   0   log10(30)           log10(1./sqrt(19/20))  0     log10(60)             log10(1./sqrt(19/20))  0],...
-                [ Inf        0                      Inf log10(80)           log10(1./sqrt(2/3))    Inf   log10(f_in(end))      log10(1./sqrt(2/3))   Inf],...
+                [ base_bias  slopeinit(kSlope_init) 0   log10(finit(iInit)) sdinit(jSd_init)      base_exp 0 log10(1) ],...
+                [ -Inf        -pi                   0   log10(30)           log10(1./sqrt(19/20))  0    0  log10(0.95)  ],...
+                [ +Inf        pi                    Inf log10(80)           log10(1./sqrt(2/3))     Inf  Inf log10(1.1)  ],...
                 my_options);
             if sum(residual.^2)<rms
                 rms = sum(residual.^2);
@@ -61,22 +62,28 @@ for iInit = 1:length(finit)
     end
 end
 
+
+x(2) = -(sin(x(2))+1)*0.5*x(6);
+x(7) = x(3)-x(7);
+x(8) = x(4)+log10(2)+x(8);
+%x(8) = x(4)+x(8);
+x(9) = x(5);
 fit_params = [];
 fit_params.base_bias=base_bias;
 fit_params.base_exp=base_exp;
 fit_params.stim_bias=x(1);
 fit_params.stim_exp=x(2);
-fit_params.stim_exp_2=x(9);
+fit_params.stim_exp_2=x(6);
 fit_params.gauss_amp=x(3);
 fit_params.gauss_freq=x(4);
 fit_params.gauss_std=x(5);
-fit_params.gauss_amp_2=x(6);
-fit_params.gauss_freq_2=x(7);
-fit_params.gauss_std_2=x(8);
+fit_params.gauss_amp_2=x(7);
+fit_params.gauss_freq_2=x(8);
+fit_params.gauss_std_2=x(9);
 
 % get line on the whole range
 f_1 = f; f_1(f_1<40) = nan;
-fit_linear = x(1)-nansum([x(9)*log10(f) x(2)*log10(f_1)-x(2)*log10(40)], 2);
+fit_linear = x(1)-nansum([x(6)*log10(f);x(2)*log10(f_1)-x(2)*log10(40)], 1);
 fit_gauss_1 = x(3)*x(5)*sqrt(2*pi)*normpdf(log10(f),x(4), x(5));
-fit_gauss_2 = x(6)*x(8)*sqrt(2*pi)*normpdf(log10(f),x(7), x(8));
+fit_gauss_2 = x(7)*x(9)*sqrt(2*pi)*normpdf(log10(f),x(8), x(9));
 fit_line = fit_linear + fit_gauss_1 + fit_gauss_2;
