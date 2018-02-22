@@ -260,19 +260,19 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 loglog(xLab, (data(ch, :, cnd)), 'r', 'linewidth', 1); hold on;
             end
             xlim([10 140]);
+            keyboard
             if allCfg.gammaPeak
                 if strcmp(allCfg.gammaPeak, 'all');
-                    [base_bias, base_exp, event_bias, event_exp_2, gauss_amp, gauss_freq, gauss_std, fit_f2] = ...
-                        fit_gammadata(round(xLab)', round(xLab), base(ch, :), data(ch, :, cnd));
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd));
                 else
-                    [base_bias, base_exp, event_bias, event_exp_2, gauss_amp, gauss_freq, gauss_std, fit_f2] = ...
-                        fit_gammadata(round(xLab)', allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
                 end
-                loglog((xLab), 10.^(base_bias-log10(round(xLab))*base_exp), 'color', [.5 .5 .5]/2)
-                loglog((xLab), 10.^(fit_f2), 'color', [1 0 0 ]/2), hold on
-                text((10^gauss_freq)/2, min(10.^(fit_f2))/10,...
-                    sprintf('Peak: %2.2f\nFreq: %2.2f\nstd: %2.2f', gauss_amp, 10^gauss_freq, 10^gauss_std),...
-                    'fontsize', 5); hold on;
+                loglog((xLab), 10.^(fit_params.base_bias-log10(round(xLab))*fit_params.base_exp), 'color', [.5 .5 .5]/2)
+                loglog((xLab), 10.^(fit_line), 'color', [1 0 0 ]/2), hold on
+                
+                % text the params
+                text((10^fit_params.gauss_freq)/2, min(10.^(fit_line))/10, sprintf('Peak: %2.2f\nFreq: %2.2f\nstd: %2.2f', ...
+                    fit_params.gauss_amp, 10^fit_params.gauss_freq, 10^fit_params.gauss_std),'fontsize', 5); hold on;
             end
             
             %             ylim([min([data(ch, :, cnd) baseline(ch, :)]) max([data(ch, :, cnd) baseline(ch, :)])]);
