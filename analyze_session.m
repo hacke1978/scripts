@@ -163,9 +163,9 @@ cfg.output     = 'pow';
 cfg.channel = lfpBaseline.label;
 cfg.method     = 'mtmfft';
 if strcmp(allCfg.type, 'NatImSEQ')
-    cfg.foi        = 10:2.5:120;
+    cfg.foi        = 10:2.5:140;
 else
-    cfg.foi        = 10:2:120;
+    cfg.foi        = 10:2:140;
 end
 cfg.taper      = 'dpss';
 cfg.tapsmofrq = 7*ones(1,length(cfg.foi));

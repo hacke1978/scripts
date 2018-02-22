@@ -1,5 +1,8 @@
-function [base_exp, base_bias, gauss_amp, gauss_freq, fit_f2] = ...
-                    fit_gammadata(f, f_use4fit, data_base, data_fit)
+function [base_bias, base_exp, event_bias, event_exp_2, gauss_amp, gauss_freq, gauss_std, fit_f2] = ...
+     fit_gammadata(f, f_use4fit, data_base, data_fit)
+
+% function [base_exp, base_bias, event_bias, event_exp,exp_coeff, gauss_amp, gauss_freq, fit_f2] = ...
+%     fit_gammadata(f, f_use4fit, data_base, data_fit)
 
 % function fits broadband + gaussian
 % [out_exp,w_pwr,w_gauss,gauss_f,fit_f2] = ...
@@ -27,32 +30,118 @@ function [base_exp, base_bias, gauss_amp, gauss_freq, fit_f2] = ...
 %
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% keyboard
 f_sel=ismember(f,f_use4fit);
 x_base=data_base(f_sel);
 x_in=data_fit(f_sel);
 f_in=f(f_sel);
-
+f_in_1=f_in; f_in_1(f_in_1<40) = nan;
 % fit exponent to base
 p=polyfit(log10(f_in),log10(x_base)',1);
-base_exp=-p(1);
-base_bias = p(2);
+base_exp  = -p(1);
+base_bias =  p(2);
 
 % maxPeak = max(log10(x_in)-event_bias+event_exp*log10(f_in'));
 my_options=optimset('Display','off','Algorithm','trust-region-reflective'); % trust-region-reflective
-[x]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in')),...
-    [ base_bias  base_exp    0   log10(50)   log10(1./sqrt(3/4))    0      log10(1./sqrt(3/4))    ],... %log10(100) 
-    [-Inf         -Inf       0   log10(35)   log10(1./sqrt(19/20))  0      log10(1./sqrt(19/20))  ],... %log10(70)    
-    [ Inf        base_exp    Inf log10(80)   log10(1./sqrt(2/3))    Inf    log10(1./sqrt(2/3))    ],... %log10(160)   
-    my_options);
 
+%  [x_tmp, ~, residual]=lsqnonlin(@(x) fit_func2_loglog(x, log10(x_in), log10(f_in')),...
+%              [ base_bias  0           10    ] ,...
+%              [ 0          -Inf        0     ],...
+%              [ Inf        Inf         Inf   ],...
+%              my_options);
+% x = x_tmp;
+% event_bias=x(1);
+% event_exp=x(2);
+% % exp_amp=x(3);
+% exp_coeff=x(3);
+% 
+% fit_linear = event_bias-event_exp*exp(-log10(f_in')*exp_coeff);
+
+%slopeinit(kSlope_init)/2   
+%(1/8)*base_exp  
+%  base_exp   
+% keyboard
+x = [];
+rms = inf;
+finit = linspace(30,80,5);
+sdinit = linspace(log10(1./sqrt(2/3)), log10(1./sqrt(19/20)),3);
+slopeinit = linspace(0, -0.5*base_exp,3);
+for iInit = 1:length(finit)
+    for jSd_init = 1%:length(sdinit)
+        for kSlope_init = 1:length(slopeinit)
+            [x_tmp, ~, residual]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in'), log10(f_in_1'), base_exp),...
+                 [ base_bias  slopeinit(kSlope_init)        0   log10(finit(iInit))   sdinit(jSd_init)       0     log10(finit(iInit)*2) log10(1./sqrt(3/4))    base_exp],... %log10(100)
+                 [ 0          -Inf                          0    log10(30)             log10(1./sqrt(19/20))  0     log10(60)             log10(1./sqrt(19/20))  0],... %log10(70)
+                 [ Inf        0                             Inf   log10(80)             log10(1./sqrt(2/3))    Inf   log10(f_in(end))      log10(1./sqrt(2/3))   Inf],... %log10(160)
+...%                 [ 0    log10(finit(iInit))   sdinit(jSd_init)       0     log10(finit(iInit)*2) log10(1./sqrt(3/4))     ],... %log10(100)
+...%                 [ 0    log10(30)             log10(1./sqrt(19/20))  0     log10(60)             log10(1./sqrt(19/20))   ],... %log10(70)
+...%                 [ Inf  log10(80)             log10(1./sqrt(2/3))    Inf   log10(f_in(end))      log10(1./sqrt(2/3))     ],... %log10(160)             
+                my_options);
+            if sum(residual.^2)<rms
+                rms = sum(residual.^2);
+                x = x_tmp;
+            end
+        end
+    end
+end
+% gauss_amp=x(1);
+% gauss_freq=x(2);
+% gauss_std=x(3);
+% gauss_amp_2=x(4);
+% gauss_freq_2=x(5);
+% gauss_std_2=x(6);
 event_bias=x(1);
-event_exp=x(2);
+event_exp_2=x(2);
+% event_exp_2=x(3);
+%event_exp_2=0;
 gauss_amp=x(3);
 gauss_freq=x(4);
 gauss_std=x(5);
 gauss_amp_2=x(6);
-gauss_std_2=x(7);
+gauss_freq_2=x(7);
+gauss_std_2=x(8);
 
+% get fits
+% keyboard
+%keyboard
+f_1 = f; f_1(f_1<40) = nan;
+% event_exp_2
+fit_linear = event_bias-nansum([x(9)*log10(f) event_exp_2*log10(f_1)-event_exp_2*log10(40)], 2);
+fit_gauss_1 = gauss_amp*gauss_std*sqrt(2*pi)*normpdf(log10(f),gauss_freq, gauss_std);
+fit_gauss_2 = gauss_amp_2*gauss_std_2*sqrt(2*pi)*normpdf(log10(f),gauss_freq_2, gauss_std_2);
+fit_f2 = fit_linear + fit_gauss_1 + fit_gauss_2;
+% fit_f2 = fit_linear;
+% x = [];
+% rms = inf;
+% finit = linspace(30,80,5);
+% sdinit = linspace(log10(1./sqrt(2/3)), log10(1./sqrt(19/20)),3);
+% slopeinit = linspace(base_exp*(1/3), base_exp,3);
+% for iInit = 1:length(finit)
+%     for jSd_init = 1:length(sdinit)
+%         for kSlope_init = 1:length(slopeinit)
+%             [x_tmp, ~, residual]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in')),...
+%                 [ base_bias  slopeinit(kSlope_init)   0   log10(finit(iInit))  sdinit(jSd_init)          0      log10(finit(iInit)*2)   log10(1./sqrt(3/4))        0   ],... %log10(100)
+%                 [-Inf        (1/3)*base_exp           0   log10(30)            log10(1./sqrt(19/20))     0      log10(60)               log10(1./sqrt(19/20))      0   ],... %log10(70)
+%                 [ Inf        base_exp                 Inf log10(80)            log10(1./sqrt(2/3))       inf    log10(f_in(end))        log10(1./sqrt(2/3))        Inf ],... %log10(160)
+%                 my_options);
+%             % x_tmp(6) = (x_tmp(3)*((sin(x_tmp(6))+1)));
+%             if sum(residual.^2)<rms
+%                 rms = sum(residual.^2);
+%                 x = x_tmp;
+%             end
+%         end
+%     end
+% end
+
+% % % event_bias=x(1);
+% % % event_exp=x(2);
+% % % gauss_amp=x(3);
+% % % gauss_freq=x(4);
+% % % gauss_std=x(5);
+% % % gauss_amp_2=x(6);
+% % % gauss_freq_2=x(7);
+% % % gauss_std_2=x(8);
+% % % exp_coeff=x(9);
 % maxPeak = 1.2 * max(abs(log10(x_in) - (event_bias - event_slope*log10(f_in'))));
 % [x]=lsqnonlin(@(x) fit_func3_loglog(x,log10(x_in),log10(f_in'),base_exp),...
 %     [ 0     0       log10(50) log10(1.5)   base_exp  0        log10(gauss_freq)   log10(1.5)  ],... %
@@ -74,10 +163,11 @@ gauss_std_2=x(7);
 % fit_f2=w_pwr-gauss_s*log10(f) + ...
 %     w_gauss*.04*sqrt(2*pi)*normpdf(log10(f),gauss_f, gauss_w);
 % figure
-fit_linear = event_bias-event_exp*log10(f);
-fit_gauss_1 = gauss_amp*.04*sqrt(2*pi)*normpdf(log10(f),gauss_freq, gauss_std);
-fit_gauss_2 = gauss_amp_2*.04*sqrt(2*pi)*normpdf(log10(f),gauss_freq+log10(2), gauss_std_2);
-fit_f2 = fit_linear + fit_gauss_1 + fit_gauss_2; 
+% fit_base = -event_exp_2*log10(f_in_2);
+% % % fit_linear = event_bias-event_exp*log10(f) + exp(-log10(f)*exp_coeff);
+% % % fit_gauss_1 = gauss_amp*gauss_std*sqrt(2*pi)*normpdf(log10(f),gauss_freq, gauss_std);
+% % % fit_gauss_2 = gauss_amp_2*gauss_std_2*sqrt(2*pi)*normpdf(log10(f),gauss_freq_2, gauss_std_2);
+% % % fit_f2 = fit_linear + fit_gauss_1 + fit_gauss_2;
 % loglog(f, 10.^(fit_f2), 'color', [1 0 0 ]/2)
 % hold on
 % loglog(f, 10.^(event_bias-event_slope*log10(f)), 'color', [1 0 0 ]/2)
