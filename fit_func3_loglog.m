@@ -1,5 +1,4 @@
-function F = fit_func3_loglog(x, P, f, f_1, base_exp)
-
+function F = fit_func3_loglog(x, P, f, f_1)
 % function for fitting a broadband + gaussian
 
 %     Copyright (C) 2014  D Hermes
