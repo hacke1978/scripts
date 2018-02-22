@@ -135,9 +135,9 @@ cfg.output     = 'pow';
 cfg.channel    = 'all';
 cfg.method     = 'mtmfft';
 if strcmp(allCfg.type, 'NatImSEQ')
-    cfg.foi        = 10:2.5:120;
+    cfg.foi        = 10:2.5:140;
 else
-    cfg.foi        = 10:2:120;
+    cfg.foi        = 10:2:140;
 end
 cfg.channel = lfpSel.label;
 cfg.taper      = 'dpss';
@@ -161,7 +161,7 @@ if allCfg.runErrorBars
     cfg.output     = 'pow';
     cfg.channel    = 'all';
     cfg.method     = 'mtmfft';
-    cfg.foi        = 10:2:120;
+    cfg.foi        = 10:2:140;
     cfg.channel = lfpSel.label;
     cfg.taper      = 'dpss';
     cfg.tapsmofrq = 7*ones(1,length(cfg.foi));

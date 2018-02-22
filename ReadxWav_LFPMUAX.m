@@ -28,6 +28,11 @@ sessionList = {
 %     'ares038a02',...
 %     'ares039a01',...
 %     'ares039a02',...
+% 'ares040a01',...
+'ares040a02',...
+% 'ares040a03',...
+% 'ares042a01',...
+% 'ares042a02',...
     };
 % sessionList = {
 %     'ares023a02',...
@@ -57,33 +62,33 @@ for ses = 1:length(sessionList)
     dataDirSes = fullfile(dataDir, sessionList{ses});
     pathXWav = dir(fullfile(dataDirSes, '*.sev'));  % get raw data
     %% RAW to MUAX / LFP
-    cfg = [];
-    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-    cfg.targetFolder = outputDirSes;
-    cfg.calcLocation = 'slurm';
-    tdt_preprocessing_AP(cfg);
-    %
-    cfg = [];
-    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-    cfg.targetFolder = outputDirSes;
-    cfg.calcLocation = 'slurm';
-    cfg.pSigma = 3; % amp. threshold pSigma*median(abs(x)/0.6745)) % Quian Quiroga et al. (2004)
-    cfg.pISI = 1.5; % min ISI interval in ms  %peakseak Peter O'Connor
-    tdt_extractspikes_AP(cfg);
+%     cfg = [];
+%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+%     cfg.targetFolder = outputDirSes;
+%     cfg.calcLocation = 'slurm';
+%     tdt_preprocessing_AP(cfg);
+%     %
+%     cfg = [];
+%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+%     cfg.targetFolder = outputDirSes;
+%     cfg.calcLocation = 'slurm';
+%     cfg.pSigma = 3; % amp. threshold pSigma*median(abs(x)/0.6745)) % Quian Quiroga et al. (2004)
+%     cfg.pISI = 1.5; % min ISI interval in ms  %peakseak Peter O'Connor
+%     tdt_extractspikes_AP(cfg);
     
     %% ESIload the files
     pathLfp = dir(fullfile(outputDirSes, '*_xWav.lfp'));
-    pathMua = dir(fullfile(outputDirSes, '*_xWav.mua'));
-    pathMuax = dir(fullfile(outputDirSes, '*_xWav.muax'));
-    pathMuat = dir(fullfile(outputDirSes, '*_xWav.muat'));
+%     pathMua = dir(fullfile(outputDirSes, '*_xWav.mua'));
+%     pathMuax = dir(fullfile(outputDirSes, '*_xWav.muax'));
+%     pathMuat = dir(fullfile(outputDirSes, '*_xWav.muat'));
     ESIload(fullfile(outputDirSes, pathLfp.name), '-mat');
     lfp.data = data; clear data;
-    ESIload(fullfile(outputDirSes, pathMuax.name), '-mat');
-    muax.data = data; clear data;
-    ESIload(fullfile(outputDirSes, pathMuat.name), '-mat');
-    muat.data = data; clear data;
-    ESIload(fullfile(outputDirSes, pathMua.name), '-mat');
-    mua.data = data; clear data;
+%     ESIload(fullfile(outputDirSes, pathMuax.name), '-mat');
+%     muax.data = data; clear data;
+%     ESIload(fullfile(outputDirSes, pathMuat.name), '-mat');
+%     muat.data = data; clear data;
+%     ESIload(fullfile(outputDirSes, pathMua.name), '-mat');
+%     mua.data = data; clear data;
     % ESIload TDT strobes
     sesName = sessionList{ses};
     savename = sprintf('%s/Experiments_%s', outputDirSes, sesName);
@@ -106,13 +111,13 @@ for ses = 1:length(sessionList)
     end
     data.cfg.trl = data.sampleinfo;
     trialtime = [cellfun(@min, data.time)' cellfun(@max, data.time)'];
-    save([savename '_chopped.lfp'], 'data', '-v7.3');
+% %     save([savename '_chopped.lfp'], 'data', '-v7.3');
     clear data
     
     % filtered LFP
     cfg = [];
     cfg.bsfilter = 'yes';
-    cfg.bsfreq   = [49.9 50.1;99.9 100.1;149.9 150.1;];
+    cfg.bsfreq   = [49.9 50.1;99.7 100.3;149.5 150.5;];
     cfg.bsinstabilityfix = 'reduce';
     dataFilt = ft_preprocessing(cfg, lfp.data);
     
@@ -158,82 +163,82 @@ for ses = 1:length(sessionList)
     data.cfg.trl = data.sampleinfo;
     save([savename '_chopped_filtered.lfp'], 'data', '-v7.3');
     
-    % Chop it - MUAX
-    data.fsample = muax.data.fsample;
-    data.cfg = muax.data.cfg;
-    data.label = muax.data.label;
-    data.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
-    time = muax.data.time{1};
-    data.sampleinfo = [];
-    for ii = 1:length(Cond)
-        trialChosen = trialStart(ii) <= time & time <= trialEnd(ii);
-        data.trial{ii} = muax.data.trial{1}(:, trialChosen);
-        data.time{ii} = time(trialChosen)-trialStimOn(ii);
-        sinfo = round(data.fsample*[trialStart(ii) trialEnd(ii)]);
-        sinfo(2) = sinfo(2) + length(data.time{ii}) - (sinfo(2)-sinfo(1))-1;
-        data.sampleinfo = [data.sampleinfo; sinfo];
-    end
-    data.cfg.trl = data.sampleinfo;
-    save([savename '_chopped.muax'], 'data', '-v7.3');
-    clear data
-    
-    % Chop it - MUA
-    data.fsample = mua.data.fsample;
-    data.cfg = mua.data.cfg;
-    data.label = mua.data.label;
-    data.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
-    time = mua.data.time{1};
-    data.sampleinfo = [];
-    for ii = 1:length(Cond)
-        trialChosen = trialStart(ii) <= time & time <= trialEnd(ii);
-        data.trial{ii} = mua.data.trial{1}(:, trialChosen);
-        data.time{ii} = time(trialChosen)-trialStimOn(ii);
-        sinfo = round(data.fsample*[trialStart(ii) trialEnd(ii)]);
-        sinfo(2) = sinfo(2) + length(data.time{ii}) - (sinfo(2)-sinfo(1))-1;
-        data.sampleinfo = [data.sampleinfo; sinfo];
-    end
-    data.cfg.trl = data.sampleinfo;
-    save([savename '_chopped.mua'], 'data', '-v7.3');
-    clear data
-    
-    % Chop it - MUAThreshold
-    data.fsample = muat.data.fsample;
-    data.cfg = muat.data.cfg;
-    data.label = muat.data.label;
-    data.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
-    
-    % Make Spikes
-    spike.hdr = muat.data.hdr;
-    spike.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
-    nrTrials = length(Cond);
-    data.sampleinfo = [];
-    for ch = 1:length(muat.data.label)
-        spikeTimes = muat.data.trial{ch};
-        spikeStamps = round(data.fsample*muat.data.trial{ch});
-        for ii = 1:nrTrials
-            if ch == 1
-                data.sampleinfo = [data.sampleinfo; round(data.fsample*[trialStart(ii) trialEnd(ii)])];
-            end
-            data.trial{ch, ii} = spikeTimes(and(spikeTimes>trialStart(ii), spikeTimes<=trialEnd(ii)))- trialStimOn(ii);
-            data.timestamp{ch, ii} = spikeStamps(and(spikeTimes>trialStart(ii), spikeTimes<=trialEnd(ii)))- trialStimOn(ii);
-        end
-        data.cfg.trl = data.sampleinfo;
-        spike.time{ch} = ([data.trial{ch, :}]');
-        spike.timestamp{ch} = ([data.timestamp{ch, :}]');
-        spike.label{ch} = data.label{ch};
-        spike.trialtime = trialtime;
-        spike.cond = Cond;
-        spike.sampleinfo = data.sampleinfo;
-        spike.taccept = taccept;
-        onesVec = cellfun(@(x) (ones(length(x), 1)'), data.trial(ch, :), 'UniformOutput', false);
-        trialVec = cellfun(@(x, y) (x*y), onesVec, num2cell([1:nrTrials]), 'UniformOutput', false);
-        spike.trial{ch} = [trialVec{:}]';
-    end
-    save([savename '_chopped.muat'],'data', '-v7.3')
-    clear mua
-    
-    save([savename '_chopped.spike'],'spike', '-v7.3')
-    clear spike
+% %     % Chop it - MUAX
+% %     data.fsample = muax.data.fsample;
+% %     data.cfg = muax.data.cfg;
+% %     data.label = muax.data.label;
+% %     data.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
+% %     time = muax.data.time{1};
+% %     data.sampleinfo = [];
+% %     for ii = 1:length(Cond)
+% %         trialChosen = trialStart(ii) <= time & time <= trialEnd(ii);
+% %         data.trial{ii} = muax.data.trial{1}(:, trialChosen);
+% %         data.time{ii} = time(trialChosen)-trialStimOn(ii);
+% %         sinfo = round(data.fsample*[trialStart(ii) trialEnd(ii)]);
+% %         sinfo(2) = sinfo(2) + length(data.time{ii}) - (sinfo(2)-sinfo(1))-1;
+% %         data.sampleinfo = [data.sampleinfo; sinfo];
+% %     end
+% %     data.cfg.trl = data.sampleinfo;
+% %     save([savename '_chopped.muax'], 'data', '-v7.3');
+% %     clear data
+% %     
+% %     % Chop it - MUA
+% %     data.fsample = mua.data.fsample;
+% %     data.cfg = mua.data.cfg;
+% %     data.label = mua.data.label;
+% %     data.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
+% %     time = mua.data.time{1};
+% %     data.sampleinfo = [];
+% %     for ii = 1:length(Cond)
+% %         trialChosen = trialStart(ii) <= time & time <= trialEnd(ii);
+% %         data.trial{ii} = mua.data.trial{1}(:, trialChosen);
+% %         data.time{ii} = time(trialChosen)-trialStimOn(ii);
+% %         sinfo = round(data.fsample*[trialStart(ii) trialEnd(ii)]);
+% %         sinfo(2) = sinfo(2) + length(data.time{ii}) - (sinfo(2)-sinfo(1))-1;
+% %         data.sampleinfo = [data.sampleinfo; sinfo];
+% %     end
+% %     data.cfg.trl = data.sampleinfo;
+% %     save([savename '_chopped.mua'], 'data', '-v7.3');
+% %     clear data
+% %     
+% %     % Chop it - MUAThreshold
+% %     data.fsample = muat.data.fsample;
+% %     data.cfg = muat.data.cfg;
+% %     data.label = muat.data.label;
+% %     data.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
+% %     
+% %     % Make Spikes
+% %     spike.hdr = muat.data.hdr;
+% %     spike.trialinfo = [[1:length(Cond)]' taccept Cond trialStart trialEnd]; % add in trialno
+% %     nrTrials = length(Cond);
+% %     data.sampleinfo = [];
+% %     for ch = 1:length(muat.data.label)
+% %         spikeTimes = muat.data.trial{ch};
+% %         spikeStamps = round(data.fsample*muat.data.trial{ch});
+% %         for ii = 1:nrTrials
+% %             if ch == 1
+% %                 data.sampleinfo = [data.sampleinfo; round(data.fsample*[trialStart(ii) trialEnd(ii)])];
+% %             end
+% %             data.trial{ch, ii} = spikeTimes(and(spikeTimes>trialStart(ii), spikeTimes<=trialEnd(ii)))- trialStimOn(ii);
+% %             data.timestamp{ch, ii} = spikeStamps(and(spikeTimes>trialStart(ii), spikeTimes<=trialEnd(ii)))- trialStimOn(ii);
+% %         end
+% %         data.cfg.trl = data.sampleinfo;
+% %         spike.time{ch} = ([data.trial{ch, :}]');
+% %         spike.timestamp{ch} = ([data.timestamp{ch, :}]');
+% %         spike.label{ch} = data.label{ch};
+% %         spike.trialtime = trialtime;
+% %         spike.cond = Cond;
+% %         spike.sampleinfo = data.sampleinfo;
+% %         spike.taccept = taccept;
+% %         onesVec = cellfun(@(x) (ones(length(x), 1)'), data.trial(ch, :), 'UniformOutput', false);
+% %         trialVec = cellfun(@(x, y) (x*y), onesVec, num2cell([1:nrTrials]), 'UniformOutput', false);
+% %         spike.trial{ch} = [trialVec{:}]';
+% %     end
+% %     save([savename '_chopped.muat'],'data', '-v7.3')
+% %     clear mua
+% %     
+% %     save([savename '_chopped.spike'],'spike', '-v7.3')
+% %     clear spike
     
     %     %% Get the eye data
     %     if str2num(sesName(6:8)) > 458 | strcmp(sesName(1:4), 'ares')
