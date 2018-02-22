@@ -32,14 +32,11 @@ f_in=f(f_sel);
 f_in_1=f_in; f_in_1(f_in_1<40) = nan;
 
 if ~isequal(length(f_in), length(x_base)); x_base = x_base'; end
+if ~isequal(length(f_in), length(x_in)); x_in = x_in'; end
 % fit exponent to base
 p=polyfit(log10(f_in),log10(x_base),1);
 base_exp  = -p(1);
 base_bias =  p(2);
-
-if ~isequal(size(x_in),size(f_in))
-    f_in=f_in';
-end
 
 my_options=optimset('Display','off','Algorithm','trust-region-reflective');
 
