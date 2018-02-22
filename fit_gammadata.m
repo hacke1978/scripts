@@ -1,4 +1,4 @@
-function [base_exp, base_bias, gauss_amp, gauss_freq, fit_f2] = ...
+function [base_exp, base_bias, gauss_amp, gauss_freq, fit_f2,gauss_fit] = ...
                     fit_gammadata(f, f_use4fit, data_base, data_fit)
 
 % function fits broadband + gaussian
@@ -32,26 +32,35 @@ x_base=data_base(f_sel);
 x_in=data_fit(f_sel);
 f_in=f(f_sel);
 
+if ~isequal(size(f_in),size(x_base))
+    x_base=x_base';
+end
+    
 % fit exponent to base
-p=polyfit(log10(f_in),log10(x_base)',1);
-base_exp=-p(1);
+p=polyfit(log10(f_in),log10(x_base),1);
+
+base_exp  = -p(1);
 base_bias = p(2);
+
+if ~isequal(size(x_in),size(f_in))
+    f_in=f_in';
+end
 
 % maxPeak = max(log10(x_in)-event_bias+event_exp*log10(f_in'));
 my_options=optimset('Display','off','Algorithm','trust-region-reflective'); % trust-region-reflective
-[x]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in')),...
+[x]=lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in)),...
     [ base_bias  base_exp    0   log10(50)   log10(1./sqrt(3/4))    0      log10(1./sqrt(3/4))    ],... %log10(100) 
     [-Inf         -Inf       0   log10(35)   log10(1./sqrt(19/20))  0      log10(1./sqrt(19/20))  ],... %log10(70)    
     [ Inf        base_exp    Inf log10(80)   log10(1./sqrt(2/3))    Inf    log10(1./sqrt(2/3))    ],... %log10(160)   
     my_options);
 
-event_bias=x(1);
-event_exp=x(2);
-gauss_amp=x(3);
-gauss_freq=x(4);
-gauss_std=x(5);
-gauss_amp_2=x(6);
-gauss_std_2=x(7);
+event_bias  = x(1);
+event_exp   = x(2);
+gauss_amp   = x(3);
+gauss_freq  = x(4);
+gauss_std   = x(5);
+gauss_amp_2 = x(6);
+gauss_std_2 = x(7);
 
 % maxPeak = 1.2 * max(abs(log10(x_in) - (event_bias - event_slope*log10(f_in'))));
 % [x]=lsqnonlin(@(x) fit_func3_loglog(x,log10(x_in),log10(f_in'),base_exp),...
@@ -78,6 +87,19 @@ fit_linear = event_bias-event_exp*log10(f);
 fit_gauss_1 = gauss_amp*.04*sqrt(2*pi)*normpdf(log10(f),gauss_freq, gauss_std);
 fit_gauss_2 = gauss_amp_2*.04*sqrt(2*pi)*normpdf(log10(f),gauss_freq+log10(2), gauss_std_2);
 fit_f2 = fit_linear + fit_gauss_1 + fit_gauss_2; 
+
+%AP I added this for more convenient saving/plotting
+gauss_fit.amp   = gauss_amp;
+gauss_fit.freq  = 10.^gauss_freq;
+gauss_fit.std   = gauss_std;
+gauss_fit.amp2  = gauss_amp_2;
+gauss_fit.std2  = gauss_std_2;
+gauss_fit.freq2 = 2*(10.^gauss_freq);
+gauss_fit.event_exp   = event_exp;
+gauss_fit.event_bias  = event_bias;
+gauss_fit.base_exp    = base_exp;
+gauss_fit.base_bias   = base_bias;
+gauss_fit.fit_f2      = fit_f2;
 % loglog(f, 10.^(fit_f2), 'color', [1 0 0 ]/2)
 % hold on
 % loglog(f, 10.^(event_bias-event_slope*log10(f)), 'color', [1 0 0 ]/2)
