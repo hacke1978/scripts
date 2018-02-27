@@ -2,26 +2,25 @@ function [varargout]  =  load_preproc_data(allCfg)
 
 filename = allCfg.inputfile;
 if ~iscell(filename); filename = {filename}; end;
-
-% merge sessions if any
-if iscell(allCfg.outputfile)
-    if strcmp(allCfg.name, 'Hermes')
-        tok = cellfun(@(x) strsplit(x, '_'), allCfg.outputfile, 'UniformOutput', false);
-        tok = vertcat(tok{:});
-        mergeName  = allCfg.outputfile{1};
-        for ii=2:length(allCfg.outputfile)
-            mergeName = [mergeName , sprintf('_%s', tok{ii, end})];
-        end
-    else
-        tok = cellfun(@(x) strsplit(x, '/'), allCfg.outputfile, 'UniformOutput', false);
-        tok = vertcat(tok{:});
-        mergeName  = allCfg.outputfile{1};
-        for ii=2:length(allCfg.outputfile)
-            mergeName = [mergeName , sprintf('_%s', tok{ii, end}(end-2:end))];
-        end
-    end
-    allCfg.outputfile = mergeName;
-end
+% % % merge sessions if any
+% % if iscell(allCfg.outputfile)
+% %     if strcmp(allCfg.name, 'Hermes')
+% %         tok = cellfun(@(x) strsplit(x, '_'), allCfg.outputfile, 'UniformOutput', false);
+% %         tok = vertcat(tok{:});
+% %         mergeName  = allCfg.outputfile{1};
+% %         for ii=2:length(allCfg.outputfile)
+% %             mergeName = [mergeName , sprintf('_%s', tok{ii, end})];
+% %         end
+% %     else
+% %         tok = cellfun(@(x) strsplit(x, '/'), allCfg.outputfile, 'UniformOutput', false);
+% %         tok = vertcat(tok{:});
+% %         mergeName  = allCfg.outputfile{1};
+% %         for ii=2:length(allCfg.outputfile)
+% %             mergeName = [mergeName , sprintf('_%s', tok{ii, end}(end-2:end))];
+% %         end
+% %     end
+% %     allCfg.outputfile = mergeName;
+% % end
 
 % saveDir
 if ~exist(allCfg.outputfile, 'dir')
@@ -66,25 +65,22 @@ for ii=1:length(filename);
         end
     end
 end
-
-% if length(filename)>1
-%     % get merge dirs
-%     tok = strfind(filename{1}, '/');
-%     mname = strsplit(mergeName, '/');
-%     mkdir(fullfile(filename{1}(1:tok(end)), mname{end}));
-%     mergeDir = fullfile(filename{1}(1:tok(end)), mname{end}, mname{end});
-%
-%     % save lfp
-%     data = lfp.data;
-%     save([mergeDir '_chopped.lfp'],'data', '-v7.3');
-%     clear data;
-%     % save muax
-%     data = muax.data;
-%     save([mergeDir '_chopped.muax'],'data', '-v7.3');
-%     clear data;
-%     % save spike
-%     save([mergeDir '_chopped.spike'],'spike', '-v7.3');
-% end
+keyboard
+if length(filename)>1
+    
+    % save lfp
+    data = lfp.data;
+    save([allCfg.outputfile '_chopped.lfp'],'data', '-v7.3');
+    clear data;
+    
+    % save muax
+    data = muax.data;
+    save([allCfg.outputfile '_chopped.muax'],'data', '-v7.3');
+    clear data;
+    
+    % save spike
+    save([allCfg.outputfile '_chopped.spike'],'spike', '-v7.3');
+end
 
 % get conditions / channels
 if strcmp(allCfg.name, 'Hermes')

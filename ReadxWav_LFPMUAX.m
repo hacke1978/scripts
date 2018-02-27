@@ -29,10 +29,13 @@ sessionList = {
 %     'ares039a01',...
 %     'ares039a02',...
 % 'ares040a01',...
-'ares040a02',...
+% 'ares040a02',...
 % 'ares040a03',...
 % 'ares042a01',...
 % 'ares042a02',...
+'ares043a01',...
+'ares044a01',...
+'ares045a01',...
     };
 % sessionList = {
 %     'ares023a02',...
@@ -62,19 +65,19 @@ for ses = 1:length(sessionList)
     dataDirSes = fullfile(dataDir, sessionList{ses});
     pathXWav = dir(fullfile(dataDirSes, '*.sev'));  % get raw data
     %% RAW to MUAX / LFP
-%     cfg = [];
-%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-%     cfg.targetFolder = outputDirSes;
-%     cfg.calcLocation = 'slurm';
-%     tdt_preprocessing_AP(cfg);
-%     %
-%     cfg = [];
-%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-%     cfg.targetFolder = outputDirSes;
-%     cfg.calcLocation = 'slurm';
-%     cfg.pSigma = 3; % amp. threshold pSigma*median(abs(x)/0.6745)) % Quian Quiroga et al. (2004)
-%     cfg.pISI = 1.5; % min ISI interval in ms  %peakseak Peter O'Connor
-%     tdt_extractspikes_AP(cfg);
+    cfg = [];
+    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+    cfg.targetFolder = outputDirSes;
+    cfg.calcLocation = 'slurm';
+    tdt_preprocessing_AP(cfg);
+    %
+    cfg = [];
+    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+    cfg.targetFolder = outputDirSes;
+    cfg.calcLocation = 'slurm';
+    cfg.pSigma = 3; % amp. threshold pSigma*median(abs(x)/0.6745)) % Quian Quiroga et al. (2004)
+    cfg.pISI = 1.5; % min ISI interval in ms  %peakseak Peter O'Connor
+    tdt_extractspikes_AP(cfg);
     
     %% ESIload the files
     pathLfp = dir(fullfile(outputDirSes, '*_xWav.lfp'));

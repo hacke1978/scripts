@@ -246,11 +246,11 @@ elseif strcmp(allCfg.layout, 'stimuli')
             loglog(xLab, (baseline(ch, :)), 'Color', [0.5 0.5 0.5], 'linewidth', 1); hold on;
             if strcmp(allCfg.type, 'NatImSEQ')
                 if nd<nCond/2
-                    plot(xLab, data(ch, :, cnd), 'k'); hold on;
+                    plot(xLab, data(ch, :, cnd), 'g'); hold on;
                     plot(xLab, data_Second(ch, :, cnd), 'r'); hold on;
                 else
                     plot(xLab, data(ch, :, cnd), 'r'); hold on;
-                    plot(xLab, data_Second(ch, :, cnd), 'k'); hold on;
+                    plot(xLab, data_Second(ch, :, cnd), 'g'); hold on;
                 end
             else
                 %                 plot(xLab, data(ch, :, cnd), 'r'); hold on;
@@ -259,24 +259,43 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 end
                 loglog(xLab, (data(ch, :, cnd)), 'r', 'linewidth', 1); hold on;
             end
-            xlim([10 140]);
-            %keyboard
+            
+%             keyboard
             if allCfg.gammaPeak
                 if strcmp(allCfg.gammaPeak, 'all');
-                    [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd));
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd), 'exp');
+                    if strcmp(allCfg.type, 'NatImSEQ')
+                        [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data_Second(ch, :, cnd), 'exp');
+                    end
                 else
-                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd));
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd), 'exp');
+                    if strcmp(allCfg.type, 'NatImSEQ')
+                        [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data_Second(ch, :, cnd), 'exp');
+                    end
                 end
                 loglog((xLab), 10.^(fit_params.base_bias-log10(round(xLab))*fit_params.base_exp), 'color', [.5 .5 .5]/2)
-%                 loglog((xLab), 10.^(fit_params.stim_bias-log10(round(xLab))*fit_params.stim_exp), 'color', [.5 .5 .5]/2)
-                loglog((xLab), 10.^(fit_line), 'color', [1 0 0 ]/2), hold on
-                
+                if strcmp(allCfg.type, 'NatImSEQ')
+                    if nd<nCond/2
+                        loglog((xLab), 10.^(fit_line), 'color', [0 1 0 ]/2), hold on
+                        loglog((xLab), 10.^(fit_line_Second), 'color', [1 0 0 ]/2), hold on
+                    else
+                        loglog((xLab), 10.^(fit_line), 'color', [1 0 0 ]/2), hold on
+                        loglog((xLab), 10.^(fit_line_Second), 'color', [0 1 0 ]/2), hold on
+                    end
+                else
+                    loglog((xLab), 10.^(fit_line), 'color', [1 0 0 ]/2), hold on
+                end
                 % text the params
+                if strcmp(allCfg.type, 'NatImSEQ')
+                text((10^fit_params.gauss_freq)/2, min(10.^(fit_line))/10, sprintf('Peak: %2.2f %2.2f\nFreq: %2.2f %2.2f\nstd: %2.2f %2.2f', ...
+                    fit_params.gauss_amp, fit_params_Second.gauss_amp, 10^fit_params.gauss_freq, 10^fit_params_Second.gauss_freq, 10^fit_params.gauss_std, 10^fit_params_Second.gauss_std),'fontsize', 4); hold on;
+                else
                 text((10^fit_params.gauss_freq)/2, min(10.^(fit_line))/10, sprintf('Peak: %2.2f\nFreq: %2.2f\nstd: %2.2f', ...
                     fit_params.gauss_amp, 10^fit_params.gauss_freq, 10^fit_params.gauss_std),'fontsize', 5); hold on;
+                end
             end
-            
-            %             ylim([min([data(ch, :, cnd) baseline(ch, :)]) max([data(ch, :, cnd) baseline(ch, :)])]);
+            xlim([10 140]);
+            ylim([min([data(ch, :, cnd) baseline(ch, :)]) max([data(ch, :, cnd) baseline(ch, :)])]);
             if strcmp(allCfg.type, 'grating-ori')
                 if mod(ndLib(cnd), nc)==1
                     title(sprintf('%.2f', sfreq{cnd}), 'FontWeight', 'bold', 'FontSize', 3);

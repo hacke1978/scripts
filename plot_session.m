@@ -68,8 +68,10 @@ if strcmp(allCfg.name, 'Hermes')
         fname = fullfile(dataDir, sprintf('stimset%02d', sesNo))
 %         load('/mnt/v7k/projects/MWNaturalPredict/StimuliCondInfo/hermes_20171113_fixation-color-masksize_78_condInfo.mat');
 %         imList = fullfile(fname, condInfo.imName);
-        imList = getImListForSession(allCfg, fname);
-        [allFiles.imName] = deal(imList{:});
+        if ~strcmp(allCfg.type, 'NatImSEQ')
+            imList = getImListForSession(allCfg, fname);
+            [allFiles.imName] = deal(imList{:});
+        end
     end
     allFiles(1).RFs = RFs;
     allFiles(1).stimCenter = stimCenter;
