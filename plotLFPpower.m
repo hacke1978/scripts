@@ -260,7 +260,8 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 loglog(xLab, (data(ch, :, cnd)), 'r', 'linewidth', 1); hold on;
             end
             
-%             keyboard
+            keyboard
+            cnd = 24
             if allCfg.gammaPeak
                 if strcmp(allCfg.gammaPeak, 'all');
                     [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd), 'exp');
@@ -268,7 +269,8 @@ elseif strcmp(allCfg.layout, 'stimuli')
                         [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data_Second(ch, :, cnd), 'exp');
                     end
                 else
-                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd), 'exp');
+%                     [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd), 'exp');
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd), 'poly');
                     if strcmp(allCfg.type, 'NatImSEQ')
                         [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data_Second(ch, :, cnd), 'exp');
                     end

@@ -5,7 +5,7 @@ clear all; close all; userpath('clear'); userpath('reset');
 % sesType = 'grating-ori';
 sesType = 'NatImSEQ';
 % sesType = 'NatImFix';
-dataDir = '/mnt/archive/MWNaturalPredict'; %
+dataDir = '/mnt/archive/MWNaturalPredict/HermesRaw'; %
 % dataDir = fullfile('/mnt/hpx/projects/MWNaturalPredict/Hermes', sesType, 'raw');
 % dataDir = fullfile('/mnt/v7k/projects/MWNaturalPredict/Hermes', sesType, 'raw');
 saveDir = fullfile('/mnt/hpx/projects/MWNaturalPredict/Hermes', sesType);
@@ -91,11 +91,11 @@ batchTag = '';
 %     };
 sessionList = {...
     'hermes_20171113_fixation-color-masksize_78',...
-    'hermes_20171114_fixation-color-masksize_78b',...
-    'hermes_20171115_fixation-color-masksize_79',...
-    'hermes_20171116_fixation-color-masksize_78',...
-    'hermes_20171117_fixation-color-masksize_79b',...
-    'hermes_20170519_fixation-color-masksize_42'
+%     'hermes_20171114_fixation-color-masksize_78b',...
+%     'hermes_20171115_fixation-color-masksize_79',...
+%     'hermes_20171116_fixation-color-masksize_78',...
+%     'hermes_20171117_fixation-color-masksize_79b',...
+%     'hermes_20170519_fixation-color-masksize_42'
     };
 % sessionList = {
 %     'hermes_20180118_fixation-naturalim_86B',...
@@ -175,21 +175,21 @@ for ses = 1:length(sessionList)
     %     pathMuax = dir(fullfile(outputDirSes, '*_xWav.muax'));
     %     pathMuat = dir(fullfile(outputDirSes, '*_xWav.muat'));
     %         if isempty(pathLfp) || isempty(pathMuax)
-    cfg = [];
-    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-    cfg.targetFolder = outputDirSes;
-    cfg.calcLocation = 'slurm';
-    tdt_preprocessing_AP(cfg);
-    %     % %         %     end
-    %     % % %         if isempty(pathMuat)
-    cfg = [];
-    cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
-    cfg.targetFolder = outputDirSes;
-    cfg.calcLocation = 'slurm';
-    cfg.pSigma = 3;
-    cfg.pISI = 1.5;
-    %     cfg.pTime = [0 60]; % in sec
-    tdt_extractspikes_AP(cfg);
+%     cfg = [];
+%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+%     cfg.targetFolder = outputDirSes;
+%     cfg.calcLocation = 'slurm';
+%     tdt_preprocessing_AP(cfg);
+%     %     % %         %     end
+%     %     % % %         if isempty(pathMuat)
+%     cfg = [];
+%     cfg.filename = strcat(dataDirSes, '/', {pathXWav.name});
+%     cfg.targetFolder = outputDirSes;
+%     cfg.calcLocation = 'slurm';
+%     cfg.pSigma = 3;
+%     cfg.pISI = 1.5;
+%     %     cfg.pTime = [0 60]; % in sec
+%     tdt_extractspikes_AP(cfg);
     %     %             end
     %% Chop into Trials
     pathLfp = dir(fullfile(outputDirSes, '*_xWav.lfp'));

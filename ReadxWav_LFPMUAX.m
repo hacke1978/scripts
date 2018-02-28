@@ -114,7 +114,7 @@ for ses = 1:length(sessionList)
     end
     data.cfg.trl = data.sampleinfo;
     trialtime = [cellfun(@min, data.time)' cellfun(@max, data.time)'];
-% %     save([savename '_chopped.lfp'], 'data', '-v7.3');
+    save([savename '_chopped.lfp'], 'data', '-v7.3');
     clear data
     
     % filtered LFP

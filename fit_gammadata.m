@@ -43,28 +43,32 @@ my_options=optimset('Display','off','Algorithm','trust-region-reflective');
 
 switch fitType
     case 'exp'
-%         keyboard
         % fit params
         flagStep = true;
-        f_in_1=f_in; f_in_1(f_in>30 & f_in<100) = [];
-        x_in_1 = x_in; x_in_1(f_in>30 & f_in<100) = [];
+        flagFine = true;
+        
+        % exp params
+        f_in_1=f_in; f_in_1(f_in>25 & f_in<120) = [];
+        x_in_1 = x_in; x_in_1(f_in>25 & f_in<120) = [];
+        
+        % first fit
         slopeinit = linspace(1,10,3);
         tauinit = logspace(1e-2,100,30);
         rms = inf;
         x = [];
         if flagStep
             for slope_init = 1:length(slopeinit)
-            for tau_init = 1:length(tauinit)
-                [x_tmp, ~, residual]=lsqnonlin(@(x) fit_loglog_exp(x, log10(x_in_1), log10(f_in_1), flagStep),...
-                    [ rand(1,1)  -slopeinit(slope_init)     tauinit(tau_init) ],...
-                    [ -Inf       -Inf                       0                 ],...
-                    [ +Inf        0                         Inf               ],...
-                    my_options);
-                if sum(residual.^2)<rms
-                    rms = sum(residual.^2);
-                    x = x_tmp;
+                for tau_init = 1:length(tauinit)
+                    [x_tmp, ~, residual]=lsqnonlin(@(x) fit_loglog_exp(x, log10(x_in_1), log10(f_in_1), flagStep),...
+                        [ rand(1,1)  -slopeinit(slope_init)     tauinit(tau_init) ],...
+                        [ -Inf       -Inf                       0                 ],...
+                        [ +Inf        0                         Inf               ],...
+                        my_options);
+                    if sum(residual.^2)<rms
+                        rms = sum(residual.^2);
+                        x = x_tmp;
+                    end
                 end
-            end
             end
             exp_param = x;
             
@@ -86,14 +90,77 @@ switch fitType
                     end
                 end
             end
-            % second gaussian is constrained by the first 
-            x(6) = x(3); % std 
+            % second gaussian is constrained by the first
+            x(6) = x(3); % std
             x(4) = (sin(x(4))+1)*0.5*x(1);
-%             x(4) = x(1)-x(4); % amp
+            %             x(4) = x(1)-x(4); % amp
             x(5) = x(2)+log10(2)+x(5); % peak
             
             % % %
             x = [exp_param x;]; % pack all params
+            
+%             keyboard
+            if flagFine
+                % get lines
+                fit_linear = (x(1)-x(2)*exp(-log10(f)*x(3)));
+                fit_gauss_1 = x(4)*x(6)*sqrt(2*pi)*normpdf(log10(f),x(5),x(6));
+                fit_gauss_2 =  x(7)*x(9)*sqrt(2*pi)*normpdf(log10(f),x(8),x(9));
+                fit_line = fit_linear + fit_gauss_1 + fit_gauss_2;
+                
+                % exp params
+                f_in_1=f_in; % second(fine) step includs gamma range[30-100]
+                x_in_1 = 10.^(log10(x_in)-(fit_gauss_1(f_sel)+fit_gauss_2(f_sel)));
+                
+                % first fit
+                slopeinit = linspace(1,10,3);
+                tauinit = logspace(1e-2,100,30);
+                rms = inf;
+                x = [];
+                
+                for slope_init = 1:length(slopeinit)
+                    for tau_init = 1:length(tauinit)
+                        [x_tmp, ~, residual]=lsqnonlin(@(x) ...
+                            fit_loglog_exp(x, log10(x_in_1), log10(f_in_1), flagStep),...
+                            [ rand(1,1)  -slopeinit(slope_init)     tauinit(tau_init) ],...
+                            [ -Inf       -Inf                       0                 ],...
+                            [ +Inf        0                         Inf               ],...
+                            my_options);
+                        if sum(residual.^2)<rms
+                            rms = sum(residual.^2);
+                            x = x_tmp;
+                        end
+                    end
+                end
+                exp_param = x;
+                
+                % fit the gaussians on top of the exponential
+                x = [];
+                rms = Inf;
+                finit = linspace(30,80,5);
+                sdinit = linspace(log10(1./sqrt(2/3)), log10(1./sqrt(19/20)),3);
+                for iInit = 1:length(finit)
+                    for jSd_init = 1:length(sdinit)
+                        [x_tmp, ~, residual]=lsqnonlin(@(x) ...
+                            fit_loglog_exp(x, log10(x_in), log10(f_in), flagStep, exp_param),...
+                            [    0    log10(finit(iInit)) sdinit(jSd_init)       0      log10(1)      ],...
+                            [    0    log10(30)           log10(1./sqrt(19/20))  -pi    log10(0.95)   ],...
+                            [    Inf  log10(80)           log10(1./sqrt(2/3))    pi     log10(1.1)    ],...
+                            my_options);
+                        if sum(residual.^2)<rms
+                            rms = sum(residual.^2);
+                            x = x_tmp;
+                        end
+                    end
+                end
+                % second gaussian is constrained by the first
+                x(6) = x(3); % std
+                x(4) = (sin(x(4))+1)*0.5*x(1);
+                %             x(4) = x(1)-x(4); % amp
+                x(5) = x(2)+log10(2)+x(5); % peak
+                
+                % % %
+                x = [exp_param x;]; % pack all params
+            end
         else
             x = [];
             rms = inf;
@@ -187,11 +254,10 @@ switch fitType
         fit_gauss_2 = x(7)*x(9)*sqrt(2*pi)*normpdf(log10(f),x(8), x(9));
         fit_line = fit_linear + fit_gauss_1 + fit_gauss_2;
     case 'poly'
-        
+        keyboard
         % fit exponent to base
-p=polyfit(log10(f_in),log10(x_in));
-p
-        
-        
-        
+        p=polyfit(log10(f_in),log10(x_in), 6);
+        figure, plot(f_in, log10(x_in)), hold on
+        plot(f_in, polyval(p, log10(f_in)), 'r')
+%         lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in), log10(f_in_1))
 end

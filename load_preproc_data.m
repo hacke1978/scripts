@@ -2,25 +2,25 @@ function [varargout]  =  load_preproc_data(allCfg)
 
 filename = allCfg.inputfile;
 if ~iscell(filename); filename = {filename}; end;
-% % % merge sessions if any
-% % if iscell(allCfg.outputfile)
-% %     if strcmp(allCfg.name, 'Hermes')
-% %         tok = cellfun(@(x) strsplit(x, '_'), allCfg.outputfile, 'UniformOutput', false);
-% %         tok = vertcat(tok{:});
-% %         mergeName  = allCfg.outputfile{1};
-% %         for ii=2:length(allCfg.outputfile)
-% %             mergeName = [mergeName , sprintf('_%s', tok{ii, end})];
-% %         end
-% %     else
-% %         tok = cellfun(@(x) strsplit(x, '/'), allCfg.outputfile, 'UniformOutput', false);
-% %         tok = vertcat(tok{:});
-% %         mergeName  = allCfg.outputfile{1};
-% %         for ii=2:length(allCfg.outputfile)
-% %             mergeName = [mergeName , sprintf('_%s', tok{ii, end}(end-2:end))];
-% %         end
-% %     end
-% %     allCfg.outputfile = mergeName;
-% % end
+% % merge sessions if any
+% if iscell(allCfg.outputfile)
+%     if strcmp(allCfg.name, 'Hermes')
+%         tok = cellfun(@(x) strsplit(x, '_'), allCfg.outputfile, 'UniformOutput', false);
+%         tok = vertcat(tok{:});
+%         mergeName  = allCfg.outputfile{1};
+%         for ii=2:length(allCfg.outputfile)
+%             mergeName = [mergeName , sprintf('_%s', tok{ii, end})];
+%         end
+%     else
+%         tok = cellfun(@(x) strsplit(x, '/'), allCfg.outputfile, 'UniformOutput', false);
+%         tok = vertcat(tok{:});
+%         mergeName  = allCfg.outputfile{1};
+%         for ii=2:length(allCfg.outputfile)
+%             mergeName = [mergeName , sprintf('_%s', tok{ii, end}(end-2:end))];
+%         end
+%     end
+%     allCfg.outputfile = mergeName;
+% end
 
 % saveDir
 if ~exist(allCfg.outputfile, 'dir')
@@ -65,7 +65,7 @@ for ii=1:length(filename);
         end
     end
 end
-keyboard
+
 if length(filename)>1
     
     % save lfp
