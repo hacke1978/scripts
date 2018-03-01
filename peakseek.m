@@ -1,4 +1,4 @@
-function [locs pks]=peakseek(x,minpeakdist,minpeakh)
+function [locs pks]=peakseek(x, minpeakdist, minpeakh, leftRight, minMax)
 % Alternative to the findpeaks function.  This thing runs much much faster.
 % It really leaves findpeaks in the dust.  It also can handle ties between
 % peaks.  Findpeaks just erases both in a tie.  Shame on findpeaks.
@@ -12,7 +12,7 @@ function [locs pks]=peakseek(x,minpeakdist,minpeakh)
 % peter<dot>ed<dot>oconnor .AT. gmail<dot>com
 
 if size(x,2)==1, x=x'; end
-
+if strcmp(minMax, 'min'); x=-x+max(x)+minpeakh; end
 % Find all maxima and ties
 locs=find(x(2:end-1)>=x(1:end-2) & x(2:end-1)>=x(3:end))+1;
 
@@ -32,7 +32,9 @@ if minpeakdist>1
         pks=x(locs);
 
         [garb mins]=min([pks(del) ; pks([false del])]); %#ok<ASGLU>
-
+        if strcmp(leftRight, 'left')
+            mins = mins + [pks(del) == pks([false del])];
+        end
         deln=find(del);
 
         deln=[deln(mins==1) deln(mins==2)+1];

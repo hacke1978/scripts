@@ -99,13 +99,13 @@ switch fitType
             % % %
             x = [exp_param x;]; % pack all params
             
-%             keyboard
+            %             keyboard
             if flagFine
                 % get lines
                 fit_linear = (x(1)-x(2)*exp(-log10(f)*x(3)));
                 fit_gauss_1 = x(4)*x(6)*sqrt(2*pi)*normpdf(log10(f),x(5),x(6));
                 fit_gauss_2 =  x(7)*x(9)*sqrt(2*pi)*normpdf(log10(f),x(8),x(9));
-                fit_line = fit_linear + fit_gauss_1 + fit_gauss_2;
+                fit_poly = fit_linear + fit_gauss_1 + fit_gauss_2;
                 
                 % exp params
                 f_in_1=f_in; % second(fine) step includs gamma range[30-100]
@@ -252,12 +252,83 @@ switch fitType
         fit_linear = x(1)-nansum([x(6)*log10(f);x(2)*log10(f_1)-x(2)*log10(40)], 1);
         fit_gauss_1 = x(3)*x(5)*sqrt(2*pi)*normpdf(log10(f),x(4), x(5));
         fit_gauss_2 = x(7)*x(9)*sqrt(2*pi)*normpdf(log10(f),x(8), x(9));
-        fit_line = fit_linear + fit_gauss_1 + fit_gauss_2;
+        fit_poly = fit_linear + fit_gauss_1 + fit_gauss_2;
     case 'poly'
-        keyboard
+        
         % fit exponent to base
-        p=polyfit(log10(f_in),log10(x_in), 6);
-        figure, plot(f_in, log10(x_in)), hold on
-        plot(f_in, polyval(p, log10(f_in)), 'r')
-%         lsqnonlin(@(x) fit_func3_loglog(x, log10(x_in), log10(f_in), log10(f_in_1))
+        peak_bw = 20; % hz
+        f_peak = f_in(30 < f_in & f_in < 120); % where to look for peaks
+        
+        % get best polyfit
+        rmsFit = Inf;
+        bestP = [];
+        for ii=1:30
+            [p, S] = polyfit(log10(f_in),log10(x_in), ii);
+            if S.normr < rmsFit
+                rmsFit = S.normr;
+                bestP = p;
+                bestOrder = ii;
+            end
+        end
+        fit_poly = polyval(p, log10(f_in));
+        
+        % find peaks
+        peak_min = []; peak_max = [];
+        peak_min = peakseek(fit_poly, find(cumsum(diff(f_in))==peak_bw/2), min(fit_poly),'right', 'min');
+        peak_max = peakseek(fit_poly, find(cumsum(diff(f_in))==peak_bw/2), min(fit_poly),'right', 'max');
+        tdel_max = peak_max < peak_min(1) | f_in(peak_max) < min(f_peak)...
+                                          | f_in(peak_max) > max(f_peak);
+        tdel_min = peak_min > peak_max(end) | peak_min > max(f_peak);
+        peak_max(tdel_max) = [];
+        peak_min(tdel_min) = [];
+%         if length(peak_min)~=length(peak_max)
+            new_max = [];
+            for ii=1:length(peak_min)
+                if isempty(peak_max(find((peak_max- peak_min(ii))>0, 1)))
+                    iMax = 9999;
+                else
+                    iMax = peak_max(find((peak_max- peak_min(ii))>0, 1));
+                end
+                new_max = [new_max iMax];
+            end
+            peak_max = new_max;
+            if isempty(peak_min); peak_min = []; end
+%         elseif length(peak_max)>length(peak_min)
+%             peak_max(end) = [];
+%         end
+        peak_sel = 0 <= (peak_max-peak_min) & (peak_max-peak_min) <= peak_bw;
+        peak_min(~peak_sel) = []; peak_max(~peak_sel) = [];
+        
+        % find midpoint
+        peak_width = 2*[peak_max-peak_min];
+        peak_end = peak_min + peak_width; peak_end(peak_end>length(fit_poly)) = length(fit_poly);
+        f_mid = (fit_poly(peak_min)+fit_poly(peak_end))*0.5;
+        
+        [sort_peaks, sort_inds] = sort( fit_poly(peak_max)-f_mid );
+        sort_inds(sort_peaks<0) = []; sort_peaks(sort_peaks<0) = [];
+        max_peaks = sort_peaks(end-sign(length(sort_peaks)-1):end);
+        max_ind = sort_inds(end-sign(length(sort_peaks)-1):end);
+        fit_line_x = f_in([peak_max(max_ind); peak_max(max_ind)]);
+        fit_line_y = [f_mid(max_ind); fit_poly(peak_max(max_ind))];
+        fit_poly = polyval(p, log10(f_in));
+        if isempty(max_peaks); max_peaks = 0; end;
+        if isempty(fit_line_x); fit_line_x = 0; end;
+        if isempty(fit_line_y); fit_line_y = 0; end;
+        % output
+        fit_params = [];
+        fit_params.base_bias = base_bias;
+        fit_params.base_exp = base_exp;
+        fit_params.peaks = max_peaks;
+        fit_params.freqs = fit_line_x(1, :);
+        fit_params.order = bestOrder;
+        fit_params.p = bestP;
+        
+        fit_line.fit_line = fit_poly;
+        fit_line.xval = fit_line_x;
+        fit_line.yval = fit_line_y;
+        
+%                 figure, plot( log10(x_in)), hold on
+%                 plot( fit_poly, 'r');hold on
+%                 plot(f_in([peak_min peak_max peak_end]), fit_line([peak_min peak_max peak_end]), 'k+');
+        %         plot(fit_line_x, fit_line_y)
 end

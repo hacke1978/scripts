@@ -102,8 +102,8 @@ saveDir = '/mnt/v7k/projects/MWNaturalPredict/Figures/';
 %     'ares042a02',...  
 %     };
 sessionList = {
-    'hermes_20170628_fixation-naturalim_69',...
-%     'hermes_20170607_fixation-naturalim_57',...
+%     'hermes_20170628_fixation-naturalim_69',...
+    'hermes_20170607_fixation-naturalim_57',...
 %     'hermes_20171113_fixation-color-masksize_78_78b_78',...
 %     'hermes_20171115_fixation-color-masksize_79_79b',...
 };
@@ -207,10 +207,11 @@ for power2 = powerLib
         cfg{n}.do_sta = false;
         
         % do
-%         cfg{n}.gammaPeak = 'all';
-        cfg{n}.gammaPeak = [15:140];% 'all';
-        %         cfg{n}.gammaPeak = [20:120];
-        %         cfg{n}.gammaPeak = [35:100]; % example 35:80
+        cfg{n}.gammaFitRange = [15:140];% 'all';
+        cfg{n}.gammaFitType = 'exp'; % 'exp' 'poly' 'linear'
+        %  cfg{n}.gammaPeak = 'all';
+        %  cfg{n}.gammaPeak = [20:120];
+        %  cfg{n}.gammaPeak = [35:100]; % example 35:80
         cfg{n}.do_muaxCoherence = false;
         cfg{n}.do_timelockLFP = false;
         cfg{n}.do_timelockMUAX = false;

@@ -1,3 +1,4 @@
+function runAnalysisRFmapping
 clear all; close all; userpath('clear'); userpath('reset');
 % Run analysis for RFmapping paradigm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -12,17 +13,17 @@ dirMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict', monkeyName, sesType);
 saveMonkey = fullfile('/mnt/hpx/projects/MWNaturalPredict/Cem/Analysis', sesType, monkeyName);
 % addpath('/mnt/hpx/slurm/uranc/fieldtrip/');
 
-% sessionList = {...
-% %   'ares014a04',...
+sessionList = {...
+%   'ares014a04',...
 %   'ares026a04',...
-%   'ares030a03',...
-% %     };
+  'ares030a03',...
+    };
 % sessionList = {
 %     'hermes_20170808_rfmapping-bar_1'
 % };
-sessionList = {
-    'hermes_20180110_rfmapping-bar_3',...
-    'hermes_20180110_rfmapping-bar_4'};
+% sessionList = {
+%     'hermes_20180110_rfmapping-bar_3',...
+%     'hermes_20180110_rfmapping-bar_4'};
 saveMonkey = fullfile(saveMonkey, sessionList);
 dirMonkey = fullfile(dirMonkey, sessionList);
 
@@ -51,3 +52,24 @@ end
 
 % Run analysis
 tdt_RFanalysis_AP(cfg, 'local');
+
+end
+
+
+%% subfunctions
+function tdt_RFanalysis_AP(allCfg, calcLocation)
+addpath('/mnt/hpx/opt/ESIsoftware/matlab/')
+addpath /mnt/hpx/opt/ESIsoftware/slurmfun/
+%LFP and MUA are slurmed
+
+switch calcLocation
+    case 'slurm'
+        %         originalDirectory = pwd();
+        %         cd(fullfile('/mnt/hpx/slurm/', getenv('USER')));
+        license('inuse')
+        slurmfun(@analyze_RFmaps, allCfg, 'partition', '8GBS', 'useUserPath', true, 'waitForToolboxes', {'statistics_toolbox', 'signal_toolbox'});
+        %         cd(originalDirectory);
+    case 'local'
+        cellfun(@analyze_RFmaps, allCfg, 'UniformOutput', false)
+end
+end

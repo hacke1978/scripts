@@ -259,20 +259,27 @@ elseif strcmp(allCfg.layout, 'stimuli')
                 end
                 loglog(xLab, (data(ch, :, cnd)), 'r', 'linewidth', 1); hold on;
             end
-            
-            keyboard
-            cnd = 24
-            if allCfg.gammaPeak
-                if strcmp(allCfg.gammaPeak, 'all');
-                    [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd), 'exp');
+            %                         keyboard
+            %                         cnd = 23
+            if allCfg.gammaFitRange
+                if strcmp(allCfg.gammaFitRange, 'all');
+                    % Flash
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data(ch, :, cnd), allCfg.gammaFitType);
+                    
+                    % SEQ
                     if strcmp(allCfg.type, 'NatImSEQ')
-                        [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data_Second(ch, :, cnd), 'exp');
+                        [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), round(xLab), base(ch, :), data_Second(ch, :, cnd), allCfg.gammaFitType);
                     end
                 else
-%                     [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd), 'exp');
-                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data(ch, :, cnd), 'poly');
+                    fitPoly = true;
+                    % Flash
+                    [fit_params, fit_line] = fit_gammadata(round(xLab), allCfg.gammaFitRange, base(ch, :), data(ch, :, cnd), allCfg.gammaFitType);
+                    if fitPoly
+                        [fit_params_poly, fit_poly] = fit_gammadata(round(xLab), allCfg.gammaFitRange, base(ch, :), data(ch, :, cnd), 'poly');
+                    end
+                    % SEQ
                     if strcmp(allCfg.type, 'NatImSEQ')
-                        [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), allCfg.gammaPeak, base(ch, :), data_Second(ch, :, cnd), 'exp');
+                        [fit_params_Second, fit_line_Second] = fit_gammadata(round(xLab), allCfg.gammaFitRange, base(ch, :), data_Second(ch, :, cnd), allCfg.gammaFitType);
                     end
                 end
                 loglog((xLab), 10.^(fit_params.base_bias-log10(round(xLab))*fit_params.base_exp), 'color', [.5 .5 .5]/2)
@@ -285,15 +292,31 @@ elseif strcmp(allCfg.layout, 'stimuli')
                         loglog((xLab), 10.^(fit_line_Second), 'color', [0 1 0 ]/2), hold on
                     end
                 else
+                    if fitPoly
+                        fsel = ismember(round(xLab), allCfg.gammaFitRange);
+                        %                         loglog(round(xLab(fsel)), 10.^(fit_poly.fit_line), 'color', [1 0 0 ]/2), hold on
+                        loglog((fit_poly.xval), 10.^(fit_poly.yval), 'color', [1 0 0 ]/2), hold on
+                    end
                     loglog((xLab), 10.^(fit_line), 'color', [1 0 0 ]/2), hold on
                 end
                 % text the params
                 if strcmp(allCfg.type, 'NatImSEQ')
-                text((10^fit_params.gauss_freq)/2, min(10.^(fit_line))/10, sprintf('Peak: %2.2f %2.2f\nFreq: %2.2f %2.2f\nstd: %2.2f %2.2f', ...
-                    fit_params.gauss_amp, fit_params_Second.gauss_amp, 10^fit_params.gauss_freq, 10^fit_params_Second.gauss_freq, 10^fit_params.gauss_std, 10^fit_params_Second.gauss_std),'fontsize', 4); hold on;
+                    text((10^fit_params.gauss_freq)/2, min(10.^(fit_line))/10, sprintf('Peak: %2.2f %2.2f\nFreq: %2.2f %2.2f\nstd: %2.2f %2.2f', ...
+                        fit_params.gauss_amp, fit_params_Second.gauss_amp, 10^fit_params.gauss_freq, 10^fit_params_Second.gauss_freq, 10^fit_params.gauss_std, 10^fit_params_Second.gauss_std),'fontsize', 4); hold on;
                 else
-                text((10^fit_params.gauss_freq)/2, min(10.^(fit_line))/10, sprintf('Peak: %2.2f\nFreq: %2.2f\nstd: %2.2f', ...
-                    fit_params.gauss_amp, 10^fit_params.gauss_freq, 10^fit_params.gauss_std),'fontsize', 5); hold on;
+                    
+                    % Flash
+                    if fitPoly
+                        poly_line = 10.^(fit_poly.fit_line);
+                        [mpeak, mfreq] = max(fit_params_poly.peaks);
+                        text(10,  min(10.^(fit_line))*5, sprintf('Peak_poly: %2.2f\nFreq_poly: %2.2f', ...
+                            mpeak  , fit_params_poly.freqs(mfreq)),'fontsize', 4, 'HorizontalAlignment', 'right'); hold on;
+                        
+                    end
+                    
+                    text(30, min(10.^(fit_line))/5, sprintf('Peak: %2.2f\nFreq: %2.2f', ...
+                        fit_params.gauss_amp, 10^fit_params.gauss_freq),'fontsize', 4); hold on;
+                    
                 end
             end
             xlim([10 140]);

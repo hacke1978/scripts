@@ -43,6 +43,7 @@ else
     cfg = cell(length(chChosen), 1);
     for ii=1:length(chChosen)
         ch = chChosen(ii);
+        cfg{ii}.tag = '';
         cfg{ii}.filename = filename;
         cfg{ii}.savename = fullfile(allCfg.outputfile, sprintf('ch%02d', ch));
         cfg{ii}.orient = 0:22.5:360-22.5;
@@ -69,5 +70,7 @@ cfg.screenSize = [1680 1050];
 cfg.fixPoint = cfg.screenSize/2;
 merge_RF_files(cfg, allCfg.outputfile, false)
 
-
 end
+
+
+%%

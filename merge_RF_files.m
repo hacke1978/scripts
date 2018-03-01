@@ -47,19 +47,19 @@ cfg.screenSize = [1680 1050];
 cfg.fixPoint = cfg.screenSize/2;
 % plot the rfs
 fullScreen = ones(cfg.screenSize(2), cfg.screenSize(1))*128;
-h = figure; %set(h, 'visible', 'off');
-imagesc(fullScreen); colormap gray; hold on;
-plot(cfg.fixPoint(1), cfg.fixPoint(2), 'ro')
-RFlist = [32 10 16 14 23 41 37 35]
-for ch=1:length(RFs)
-    if ismember(ch, RFlist)
-   ellipsedraw(RFs(ch).sigmaX/2, RFs(ch).sigmaY/2, ...
-                RFs(ch).centerposx, RFs(ch).centerposy, ...
-                -RFs(ch).angle, 'k', [128 128], 0);hold on;
-%             text(RFs(ch).centerposx,RFs(ch).centerposy, data.label(ch), 'FontSize', 8, 'FontWeight', 'bold');
-text(RFs(ch).centerposx,RFs(ch).centerposy, {ch}, 'FontSize', 8, 'FontWeight', 'bold');
-    end
-end
+% h = figure; %set(h, 'visible', 'off');
+% imagesc(fullScreen); colormap gray; hold on;
+% plot(cfg.fixPoint(1), cfg.fixPoint(2), 'ro')
+% RFlist = [32 10 16 14 23 41 37 35]
+% for ch=1:length(RFs)
+%     if ismember(ch, RFlist)
+%    ellipsedraw(RFs(ch).sigmaX/2, RFs(ch).sigmaY/2, ...
+%                 RFs(ch).centerposx, RFs(ch).centerposy, ...
+%                 -RFs(ch).angle, 'k', [128 128], 0);hold on;
+% %             text(RFs(ch).centerposx,RFs(ch).centerposy, data.label(ch), 'FontSize', 8, 'FontWeight', 'bold');
+% text(RFs(ch).centerposx,RFs(ch).centerposy, {ch}, 'FontSize', 8, 'FontWeight', 'bold');
+%     end
+% end
 
 allPoints = repmat([934 830] - [cfg.fixPoint], length(cfg.orient), 1);
 cfg.orient = cfg.orient + 90;
